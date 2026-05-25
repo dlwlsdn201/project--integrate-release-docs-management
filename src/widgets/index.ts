@@ -1,2 +1,4 @@
 // widgets layer — public API
-// Export slices here as they are implemented
+export { ReleaseListPanel } from './release-list';
+export { ReleaseDetailPanel } from './release-detail';
+export { ReleaseDocumentTabs } from './release-document-tabs';

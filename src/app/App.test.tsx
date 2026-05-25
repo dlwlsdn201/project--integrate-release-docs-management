@@ -2,12 +2,14 @@ import { render, screen } from '@testing-library/react';
 import { App } from './App';
 
 describe('App', () => {
-  it('renders without error and shows expected content', () => {
+  it('renders app header with title', () => {
     render(<App />);
+    expect(screen.getByRole('button', { name: 'ReleaseHub' })).toBeInTheDocument();
+  });
 
-    expect(screen.getByRole('heading', { name: 'ReleaseHub' })).toBeInTheDocument();
-    expect(
-      screen.getByText('GitLab 릴리즈 정보를 하나의 원본 데이터로 관리합니다'),
-    ).toBeInTheDocument();
+  it('shows release list on initial load', () => {
+    render(<App />);
+    expect(screen.getByText('v1.8.0')).toBeInTheDocument();
+    expect(screen.getByText('v1.9.0')).toBeInTheDocument();
   });
 });

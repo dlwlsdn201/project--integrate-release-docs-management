@@ -11,6 +11,83 @@
 
 ---
 
+## 2026-05-25 / Unit 2 — 앱 레이아웃과 릴리즈 목록/상세 기본 화면
+
+### 최종 판단
+
+- PASS WITH WARNINGS
+
+### Critical
+
+- 없음
+
+### Warning
+
+1. `src/widgets/release-list/ui/ReleaseListPanel.tsx:49` — 릴리즈 행 전체가 `<tr onClick>`으로만 동작한다.
+   - 마우스 클릭으로는 동작하지만, 행 자체가 포커스 가능한 인터랙션 요소가 아니어서 키보드 사용자가 릴리즈 상세로 진입하기 어렵다.
+   - Unit 2의 기본 화면 완료를 막는 수준은 아니지만, Unit 7 UI Polish까지 미루기보다 Unit 3 전후에 버전 셀을 `<button>` 또는 `<a>` 형태로 바꾸는 것을 권장한다.
+   - 테스트도 `fireEvent.click(screen.getByText('v1.8.0'))`만 있어 키보드 진입 회귀를 방어하지 못한다.
+
+2. `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx:41` — 상세 탭 상태가 local state에만 있다.
+   - `CURRENT_TASK.md`에서 구현 부담이 있으면 local state로 시작하고 리스크로 남기는 것을 허용했으므로 Critical은 아니다.
+   - 다만 Release Note/Announcement 탭은 이후 공유 가능한 문서 미리보기 역할을 하므로, Unit 4 또는 Unit 7에서 hash query(`/#/releases/{id}?tab=...`)나 searchParams 기반 상태로 전환하는 것이 좋다.
+
+3. `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx:22` — `TEST_STATUS_LABEL`이 위젯 내부 local 상수로 정의되어 있다.
+   - Unit 1에서 `TEST_STATUS`는 SSOT로 정의되었지만 표시 라벨은 아직 중앙화되지 않았다.
+   - Unit 5에서 QC 상태 변경/배지를 구현하면 같은 라벨이 반복될 가능성이 높으므로 `entities/release`의 constants에 `TEST_STATUS_LABEL`을 추가하는 방향을 권장한다.
+
+4. `src/widgets/release-list/ui/ReleaseListPanel.tsx:25` — 릴리즈 목록 빈 상태 렌더링 테스트가 없다.
+   - Claude Code가 `WORK_LOG.md`에 남긴 것처럼 현재 핵심 happy path와 탭 전환은 테스트로 방어된다.
+   - Unit 8 이전이라도 목록 위젯을 수정할 때 빈 상태 테스트 1개를 추가하면 회귀 방어가 더 단단해진다.
+
+### 검증 결과
+
+현재 repo 루트에서 재실행:
+
+```bash
+pnpm lint
+```
+
+- 결과: PASS
+
+```bash
+pnpm test
+```
+
+- 결과: PASS
+- 상세: 4개 테스트 파일, 32개 테스트 통과
+  - `src/entities/release/model/generateReleaseDocuments.test.ts` 22개
+  - `src/pages/release-list/ui/ReleaseListPage.test.tsx` 3개
+  - `src/app/App.test.tsx` 2개
+  - `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx` 5개
+
+```bash
+pnpm typecheck
+```
+
+- 결과: PASS
+
+```bash
+pnpm build
+```
+
+- 결과: PASS
+- 상세: `tsc -b && vite build`, 44 modules transformed
+
+### 보완 요청
+
+- Critical 없음. Unit 2 보완 작업은 필수로 되돌리지 않는다.
+- Warning은 후속 작업에서 처리 가능하다.
+
+### 후속 권장 사항
+
+- `ReleaseDocumentTabs`에서 문서 생성 함수 4개를 매 렌더마다 호출하는 것은 현재 mock 데이터 규모와 React 19 방침상 문제로 보지 않는다. Unit 3 이후 데이터가 가변 상태가 되면 `useMemo`보다 페이지/훅의 view model 단계에서 한 번 가공해 위젯에 넘기는 구조를 우선 검토한다.
+- `ReleaseDetailPage`의 `MOCK_RELEASES.find`는 Unit 2 mock 화면 범위에서는 허용 가능하다. Unit 3에서 입력/수정 상태가 생기면 페이지 경계에 데이터 소스 인터페이스를 두고 위젯은 props만 받는 현재 방향을 유지한다.
+- `getQcProgress`는 아직 단일 사용처이므로 위젯 내부에 두는 것이 적절하다. 상세 화면에서도 같은 계산이 필요해지면 `shared/lib`보다 release 도메인 소유 계산으로 `entities/release`에 두는 편이 응집도가 높다.
+- FSD 레이어 역참조, cross-slice import, `entities/release` deep import 위반은 확인되지 않았다.
+
+---
+
 ## 2026-05-25 / Unit 1 — 릴리즈 도메인 모델과 mock 데이터
 
 ### 최종 판단

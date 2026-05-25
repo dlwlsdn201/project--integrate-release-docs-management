@@ -1,2 +1,3 @@
 // pages layer — public API
-// Export slices here as they are implemented
+export { ReleaseListPage } from './release-list';
+export { ReleaseDetailPage } from './release-detail';

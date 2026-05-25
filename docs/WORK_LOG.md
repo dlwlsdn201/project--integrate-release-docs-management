@@ -13,7 +13,7 @@
 | --- | --- | --- | --- | --- |
 | Unit 0 | Done | Claude Code | PASS WITH WARNINGS | repo 루트 pnpm 검증 통과 |
 | Unit 1 | Done | Claude Code | PASS WITH WARNINGS | 도메인 모델/mock/순수 함수 |
-| Unit 2 | Ready | Claude Code | 구현 전 | 목록/상세 기본 화면 |
+| Unit 2 | Done | Claude Code | PASS WITH WARNINGS | 목록/상세 기본 화면 |
 | Unit 3 | Draft | Claude Code | 구현 전 | 릴리즈 항목 폼 |
 | Unit 4 | Draft | Claude Code | 구현 전 | 문서 미리보기 |
 | Unit 5 | Draft | Claude Code | 구현 전 | QC 상태 UX |
@@ -22,6 +22,80 @@
 | Unit 8 | Draft | Claude Code | 구현 전 | 테스트/문서 정리 |
 
 ## 2. 단위 작업 결과
+
+---
+
+## 2026-05-25 / Unit 2 — 앱 레이아웃과 릴리즈 목록/상세 기본 화면
+
+### 작업 브랜치
+
+- `main` (커밋 없음)
+
+### 변경 파일
+
+| 파일 | 변경 유형 | 내용 |
+| --- | --- | --- |
+| `src/widgets/release-list/ui/ReleaseListPanel.tsx` | 신규 | 릴리즈 목록 테이블 위젯 (버전, 상태 배지, 이슈 수, QC 진행률) |
+| `src/widgets/release-list/index.ts` | 신규 | release-list 위젯 public API |
+| `src/widgets/release-detail/ui/ReleaseDetailPanel.tsx` | 신규 | 릴리즈 메타 정보 헤더 (버전, 상태, 생성일, 배포일) |
+| `src/widgets/release-detail/index.ts` | 신규 | release-detail 위젯 public API |
+| `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx` | 신규 | 5탭 문서 뷰 위젯 (Overview/CHANGELOG/QC Checklist/Release Note/Announcement) |
+| `src/widgets/release-document-tabs/index.ts` | 신규 | release-document-tabs 위젯 public API |
+| `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx` | 신규 | 탭 전환 흐름 RTL 테스트 5개 |
+| `src/pages/release-list/ui/ReleaseListPage.tsx` | 신규 | 릴리즈 목록 페이지 (mock 데이터 연결) |
+| `src/pages/release-list/ui/ReleaseListPage.test.tsx` | 신규 | 목록 렌더링·클릭 RTL 테스트 3개 |
+| `src/pages/release-list/index.ts` | 신규 | release-list 페이지 public API |
+| `src/pages/release-detail/ui/ReleaseDetailPage.tsx` | 신규 | 릴리즈 상세 페이지 (ReleaseDetailPanel + ReleaseDocumentTabs 조합) |
+| `src/pages/release-detail/index.ts` | 신규 | release-detail 페이지 public API |
+| `src/app/App.tsx` | 수정 | hash 기반 최소 라우팅 (/#/releases, /#/releases/{id}) + 앱 헤더 레이아웃 |
+| `src/app/App.test.tsx` | 수정 | 헤더 버튼 및 초기 릴리즈 목록 표시 검증으로 갱신 |
+| `src/pages/index.ts` | 수정 | ReleaseListPage, ReleaseDetailPage re-export 추가 |
+| `src/widgets/index.ts` | 수정 | ReleaseListPanel, ReleaseDetailPanel, ReleaseDocumentTabs re-export 추가 |
+| `docs/WORK_LOG.md` | 수정 | Unit 2 결과 기록 |
+| `docs/SESSION_STATE.md` | 수정 | 현재 상태 갱신 |
+
+### 구현 내용
+
+- **앱 레이아웃**: sticky 헤더(ReleaseHub 버튼) + main 영역. 헤더 버튼 클릭 시 목록으로 이동.
+- **Hash 라우팅**: `parseHash` 순수 함수 + `hashchange` 이벤트 기반 최소 구현. `/#/` → 목록, `/#/releases/{id}` → 상세. 외부 라이브러리 없음.
+- **릴리즈 목록 화면**: 버전, 상태 배지(색상 구분), 이슈 수, QC 진행률(통과/전체) 표 형식. `RELEASE_STATUS`, `TEST_STATUS` 상수 기반.
+- **릴리즈 상세 화면**: 메타 정보 헤더 + 5탭 문서 뷰.
+  - Overview: 포함 항목 표 (티켓, 제목, 유형, 담당자)
+  - CHANGELOG: `generateChangelog` 결과 → 카테고리별 그룹 렌더링
+  - QC Checklist: `generateQcChecklist` 결과 → 테스트케이스 표 (상태 색상 구분)
+  - Release Note: `generateReleaseNote` 결과 → isPublic=true 항목만 카드 형식
+  - Announcement: `generateAnnouncement` 결과 → `<pre>` 포맷 텍스트
+- **FSD 준수**: widgets는 `@entities/release` public API만 사용. cross-slice import 없음. pages는 widgets와 entities만 import.
+- **탭 상태**: local state 사용 (URL 반영은 남은 리스크로 기록).
+- **반응형**: `max-w-4xl mx-auto`, `sm:` 브레이크포인트 적용.
+
+### 테스트 및 검증
+
+```bash
+pnpm lint      # ✅ PASS (EXIT 0, 신규 오류 없음)
+pnpm test      # ✅ PASS (32/32: 신규 8개 + Unit 1 22개 + App 2개)
+pnpm typecheck # ✅ PASS (EXIT 0)
+pnpm build     # ✅ PASS (tsc -b + vite build, 44 modules)
+```
+
+| 명령 | 결과 | 비고 |
+| --- | --- | --- |
+| `pnpm lint` | ✅ PASS | 신규 파일 포함 0 warnings |
+| `pnpm test` | ✅ PASS (32/32) | ReleaseListPage 3개 + ReleaseDocumentTabs 5개 신규 |
+| `pnpm typecheck` | ✅ PASS | strict mode, no `any` |
+| `pnpm build` | ✅ PASS | 44 modules (Unit 1 대비 +15, 화면 연결 후 정상 증가) |
+
+### 남은 리스크
+
+1. **탭 상태 URL 미반영**: 현재 탭 선택은 local state. 새로고침 시 Overview 탭으로 초기화. hash에 `?tab=` 형식으로 URL에 반영하면 해소 가능하나 hash + searchParams 조합 복잡도가 있어 Unit 7 UI Polish에서 재검토 예정.
+2. **mock 데이터 직접 사용**: `ReleaseListPage`, `ReleaseDetailPage`가 `MOCK_RELEASES`, `getMockReleaseItems`를 직접 import. Unit 3 폼 구현 시 상태 관리 레이어 추가 필요.
+3. **릴리즈 없음 상태 미테스트**: `ReleaseListPanel`의 `releases.length === 0` 빈 상태 렌더링은 테스트 없음. Unit 8에서 보강 예정.
+
+### 리뷰 요청 포인트
+
+1. `ReleaseDocumentTabs`에서 생성 함수 4개(`generateChangelog` 등)가 매 렌더마다 호출됨. 순수 함수이고 mock 데이터는 고정이므로 현재 무방. 데이터가 가변이 되는 Unit 3 이후 최적화 여부 검토 권장.
+2. `ReleaseDetailPage`에서 `MOCK_RELEASES.find`로 release를 찾음. 없으면 "릴리즈를 찾을 수 없습니다." 처리. Unit 3에서 동적 데이터로 교체 시 이 패턴 변경 필요.
+3. `getQcProgress` 함수가 `ReleaseListPanel` 내에 위치. 추후 QC 진행률을 상세 화면에도 표시할 경우 `shared/lib`으로 이동 고려.
 
 ---
 
