@@ -11,6 +11,156 @@
 
 ---
 
+## 2026-05-25 / Unit 3 보완 — 릴리즈 항목 폼과 GitLab mock import 흐름
+
+### 최종 판단
+
+- PASS
+
+### Critical
+
+- 없음
+
+### Warning
+
+- 없음
+
+### 보완 확인
+
+1. MR URL 직접 입력 시 `gitlabIssueUrl`에 MR URL이 남는 문제를 `gitlabSourceUrl` 분리로 해결.
+2. 자동 채움 시 `setValue`에 validation/dirty 옵션을 적용해 기존 검증 에러가 즉시 해소되도록 보완.
+3. Issue/MR 선택 UI를 controlled 상태로 전환해 마지막 선택 기준으로 동기화.
+4. Zod category enum을 `CHANGE_CATEGORY` SSOT에서 파생.
+5. `ReleaseDetailPage`가 `releaseId` 변경 시 items와 form open 상태를 재초기화하도록 보완.
+6. 상세 페이지 제출 후 문서 탭 반영 통합 테스트와 releaseId 변경 회귀 테스트 추가.
+
+### 검증 결과
+
+현재 repo 루트에서 재실행:
+
+```bash
+pnpm lint
+```
+
+- 결과: PASS
+
+```bash
+pnpm test
+```
+
+- 결과: PASS
+- 상세: 6개 테스트 파일, 44개 테스트 통과
+
+```bash
+pnpm typecheck
+```
+
+- 결과: PASS
+
+```bash
+pnpm build
+```
+
+- 결과: PASS
+- 상세: `tsc -b && vite build`, 131 modules transformed
+
+### 보완 요청
+
+- 없음. Unit 3 종료 가능.
+
+### 후속 권장 사항
+
+- Unit 4에서 문서 미리보기 UI를 고도화하면서 Unit 2에서 이월된 탭 URL 상태 반영 여부를 결정한다.
+
+---
+
+## 2026-05-25 / Unit 3 — 릴리즈 항목 폼과 GitLab mock import 흐름
+
+### 최종 판단
+
+- PASS WITH WARNINGS
+
+### Critical
+
+- 없음
+
+### Warning
+
+1. `src/features/release-item-form/ui/ReleaseItemForm.tsx:53` — URL 자동 채움 입력이 `gitlabIssueUrl` 필드를 Issue/MR 공용 입력으로 사용한다.
+   - Issue URL 입력은 데이터 의미와 일치한다.
+   - MR URL 입력 시에는 `gitlabMergeRequestUrl`도 채워지지만, 사용자가 입력한 MR URL이 `gitlabIssueUrl` 값에도 남는다. 제출 결과의 `ReleaseItem.gitlabIssueUrl`에 MR URL이 들어갈 수 있어 데이터 계약 의미가 흐려진다.
+   - Unit 3 기능 확인을 막지는 않지만, Unit 4 전에 공용 입력 필드를 별도 `gitlabSourceUrl` 같은 폼 전용 필드로 분리하거나 MR 매칭 시 `gitlabIssueUrl`을 비우는 방식으로 정리하는 것을 권장한다.
+
+2. `src/features/release-item-form/ui/ReleaseItemForm.tsx:60` — 자동 채움 시 `setValue`가 `shouldValidate` 없이 호출된다.
+   - 빈 폼 제출 후 검증 에러가 표시된 상태에서 Issue/MR을 선택하면 값은 채워지지만 기존 에러 메시지가 즉시 사라지지 않을 수 있다.
+   - `setValue(name, value, { shouldValidate: true, shouldDirty: true })` 또는 `reset({ ...getValues(), ...autoFillValues })` 패턴을 검토한다.
+
+3. `src/features/release-item-form/ui/ReleaseItemForm.tsx:156` — GitLab Issue/MR 선택 `<select>`가 RHF 외부 uncontrolled 상태다.
+   - 현재는 자동 채움 트리거 용도라 기능상 허용 가능하다.
+   - 다만 사용자가 Issue 선택 후 MR을 선택하면 두 드롭다운의 시각적 선택 상태가 서로 초기화되지 않아 현재 기준 소스가 무엇인지 불명확할 수 있다.
+
+4. `src/features/release-item-form/model/schema.ts:7` — Zod의 category enum이 `CHANGE_CATEGORY` SSOT와 별도 literal로 선언되어 있다.
+   - 현재 TypeScript 구조상 `ReleaseItem.category`에 할당 가능하고 typecheck도 통과한다.
+   - 변경 유형이 추가될 경우 `entities/release` constants와 폼 스키마가 따로 수정되어야 하므로 `CHANGE_CATEGORY`에서 enum 값을 파생하는 구조를 권장한다.
+
+5. `src/pages/release-detail/ui/ReleaseDetailPage.tsx:15` — `items` state 초기값이 최초 `releaseId` 기준으로만 생성된다.
+   - 현재 UI 흐름에서는 목록 → 상세 이동 시 컴포넌트가 새로 마운트되어 문제가 드러나지 않는다.
+   - hash를 직접 바꾸거나 향후 상세 간 이동이 생기면 이전 release의 items가 남을 수 있으므로 `releaseId` 변경 시 state를 재초기화하거나 상세 페이지에 `key={releaseId}`를 부여하는 방식을 검토한다.
+
+6. `src/features/release-item-form/ui/ReleaseItemForm.test.tsx` — 폼 단위 테스트는 충분하지만 상세 페이지 통합 흐름 테스트가 없다.
+   - `ReleaseItemForm` 7개 테스트가 자동 채움, 검증, 제출 객체 생성, testCases 생성을 방어한다.
+   - 다만 Unit 3 완료 기준인 “정상 제출 시 현재 릴리즈 상세의 Overview/CHANGELOG/QC Checklist/Release Note/Announcement에 새 항목 반영”은 통합 테스트로 직접 검증되지 않는다.
+   - 최소 1개 테스트로 `ReleaseDetailPage`에서 폼 제출 후 Overview 또는 CHANGELOG 탭에 새 항목이 보이는지 확인하는 것을 권장한다.
+
+### 검증 결과
+
+현재 repo 루트에서 재실행:
+
+```bash
+pnpm lint
+```
+
+- 결과: PASS
+
+```bash
+pnpm test
+```
+
+- 결과: PASS
+- 상세: 5개 테스트 파일, 39개 테스트 통과
+  - `src/entities/release/model/generateReleaseDocuments.test.ts` 22개
+  - `src/pages/release-list/ui/ReleaseListPage.test.tsx` 3개
+  - `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx` 5개
+  - `src/app/App.test.tsx` 2개
+  - `src/features/release-item-form/ui/ReleaseItemForm.test.tsx` 7개
+
+```bash
+pnpm typecheck
+```
+
+- 결과: PASS
+
+```bash
+pnpm build
+```
+
+- 결과: PASS
+- 상세: `tsc -b && vite build`, 131 modules transformed
+
+### 보완 요청
+
+- Critical 없음. Unit 3 보완 작업은 필수로 되돌리지 않는다.
+- Warning은 Unit 4 착수 전 또는 Unit 4 중 문서 미리보기 고도화와 함께 처리 가능하다.
+
+### 후속 권장 사항
+
+- `useEffect`로 URL 변경을 감시하는 방식은 mock 데이터 자동 채움 범위에서는 적절하다. 실제 API 검색으로 바뀌는 시점에는 debounce와 비동기 요청 취소 기준을 추가한다.
+- `handleIssueSelect`/`handleMrSelect`의 개별 `setValue` 호출은 현재 규모에서는 허용 가능하다. 다만 validation 상태 동기화까지 고려하면 auto-fill helper로 묶고 `shouldValidate` 옵션을 통일하는 것이 낫다.
+- GitLab 선택 드롭다운은 폼 제출 데이터가 아니라 자동 채움 트리거라 RHF 외부에 둘 수 있다. 단, 선택 상태를 UX로 보여줄 계획이면 controlled 상태 또는 RHF 등록으로 전환한다.
+- 테스트는 피처 단위 방어력은 충분하다. 다음 보강 우선순위는 상세 페이지 통합 흐름이다.
+
+---
+
 ## 2026-05-25 / Unit 2 — 앱 레이아웃과 릴리즈 목록/상세 기본 화면
 
 ### 최종 판단

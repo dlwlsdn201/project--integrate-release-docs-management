@@ -48,10 +48,17 @@ export const ReleaseListPanel = ({ releases, allItems, onSelectRelease }: Releas
             return (
               <tr
                 key={release.id}
-                className="border-b border-gray-100 last:border-0 hover:bg-gray-50 cursor-pointer"
-                onClick={() => onSelectRelease(release.id)}
+                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
               >
-                <td className="px-4 py-3 font-medium text-blue-600">{release.version}</td>
+                <td className="px-4 py-3 font-medium">
+                  <button
+                    type="button"
+                    className="text-blue-600 hover:underline text-left"
+                    onClick={() => onSelectRelease(release.id)}
+                  >
+                    {release.version}
+                  </button>
+                </td>
                 <td className="px-4 py-3">
                   <span
                     className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_CLASS[release.status]}`}

@@ -1,53 +1,53 @@
-# Next Task Draft — Unit 2 앱 레이아웃과 릴리즈 목록/상세 기본 화면
+# Next Task Draft — Unit 4 문서 미리보기 고도화
 
 ## 0. 문서 목적
 
-이 문서는 Unit 1 완료 후 착수할 다음 작업 후보를 정리한다. Unit 1 리뷰가 PASS 또는 PASS WITH WARNINGS 상태가 되면 이 내용을 `CURRENT_TASK.md`로 승격한다.
+이 문서는 Unit 3 완료 후 착수할 다음 작업 후보를 정리한다. Unit 3 리뷰가 PASS 또는 PASS WITH WARNINGS 상태가 되면 이 내용을 `CURRENT_TASK.md`로 승격한다.
 
 ## 1. 다음 작업 후보
 
-Unit 2 — 앱 레이아웃, 라우팅, 릴리즈 목록/상세 기본 화면 구성
+Unit 4 — CHANGELOG, QC Checklist, Release Note, Announcement 미리보기 구현 고도화
 
 ## 2. 선행 작업과의 연결점
 
-- Unit 0에서 생성된 Vite/React/FSD 구조를 사용한다.
-- Unit 1에서 정의한 release 도메인 타입, mock 데이터, 문서 생성 순수 함수를 화면에서 소비한다.
-- 아직 실제 API/TanStack Query/MSW는 도입하지 않는다.
+- Unit 1에서 release 도메인 타입, mock 데이터, 문서 생성 순수 함수를 구성했다.
+- Unit 2에서 릴리즈 목록/상세 화면과 문서 탭 기본 구조를 만들었다.
+- Unit 3에서 사용자가 폼으로 추가한 릴리즈 항목이 상세 화면 상태에 반영된다.
+- Unit 4는 같은 원본 데이터에서 생성되는 문서 미리보기의 정보 구조와 읽기 품질을 개선한다.
 
 ## 3. 예상 범위
 
 ### 포함 후보
 
-- 앱 레이아웃 구성
-- 릴리즈 목록 화면 구성
-- 릴리즈 상세 화면 구성
-- Overview, CHANGELOG, QC Checklist, Release Note, Announcement 탭 UI 뼈대 구성
-- Unit 1 mock release 데이터 연결
-- 릴리즈 버전, 상태, 포함 이슈 수, QC 진행률 표시
-- 기본 반응형 레이아웃 적용
+- CHANGELOG 미리보기 레이아웃 개선
+- QC Checklist 표 구조 개선
+- Release Note 카드/섹션 구조 개선
+- Announcement 텍스트 미리보기 개선
+- 공개/비공개 항목 표시 정책 정리
+- 문서 생성 결과가 사용자 추가 항목과 일관되게 반영되는지 테스트 보강
 
 ### 제외 후보
 
-- 릴리즈 항목 등록/수정 폼
 - QC 상태 변경
-- CSV/HTML export
-- TanStack Query/MSW 연동
+- 실패 사유 입력
+- CSV/HTML/JSON export
+- clipboard 복사
 - 실제 API 연동
-- 복잡한 권한 관리
+- Google Drive 백업
 
 ## 4. 설계 메모
 
-- 화면 조합은 FSD 규칙에 맞춰 `pages`, `widgets`, `features`, `entities`, `shared` 역할을 분리한다.
-- 도메인 순수 함수는 `entities/release` Public API를 통해 import한다.
-- 라우팅은 Vite SPA에 맞는 최소 구조로 시작한다. 복잡한 라우터 도입은 필요한 경우에만 한다.
-- UI는 Tailwind CSS를 사용한다.
-- 카드 과다 사용보다 업무 도구형 밀도와 가독성을 우선한다.
+- Unit 1 순수 함수의 반환 구조를 우선 사용한다.
+- 위젯 내부에서 반복되는 표시 라벨은 `entities/release` constants로 올릴지 검토한다.
+- Unit 2 Warning의 탭 URL 상태 반영을 Unit 4에서 같이 처리할지 결정한다.
+- Release Note는 일반 사용자가 읽기 쉬운 구조를 우선한다.
+- Announcement는 Unit 6에서 clipboard 복사가 붙을 예정이므로 텍스트 구조를 유지한다.
 
 ## 5. 착수 전 결정 필요 사항
 
-1. Unit 1의 export 구조 확인
-2. 라우팅 라이브러리 도입 여부 결정
-3. 릴리즈 상세 탭 상태를 local state로 둘지 searchParams로 둘지 결정
+1. 탭 상태를 Unit 4에서 URL에 반영할지, Unit 7로 넘길지 결정한다.
+2. `TEST_STATUS_LABEL`을 `entities/release`로 중앙화할지 결정한다.
+3. Release Note에 Before/After 이미지 placeholder를 Unit 4에서 표시할지 결정한다.
 
 ## 6. 예상 검증
 
@@ -70,24 +70,24 @@ pnpm build
 ## 7. Claude Code 지시 프롬프트 초안
 
 ```text
-너는 이 repo의 구현 담당 Claude Code다. Unit 2 앱 레이아웃과 릴리즈 목록/상세 기본 화면을 구현해라.
+너는 이 repo의 구현 담당 Claude Code다. Unit 4 문서 미리보기 고도화 작업을 수행해라.
 
 작업 전 반드시 AGENTS.md, PRD.mdc, docs/PROJECT_GUIDE.md, docs/CURRENT_TASK.md, docs/WORK_LOG.md, docs/REVIEW_LOG.md, docs/SESSION_STATE.md를 읽어라.
 
 목표:
-ReleaseHub의 주요 정보 구조를 확인할 수 있는 SPA 화면 뼈대를 만든다.
+같은 릴리즈 원본 데이터에서 생성되는 CHANGELOG, QC Checklist, Release Note, Announcement 미리보기의 정보 구조와 읽기 품질을 개선한다.
 
 범위:
-- 앱 레이아웃과 릴리즈 목록/상세 기본 화면을 구성한다.
-- 릴리즈 상세 화면에 Overview, CHANGELOG, QC Checklist, Release Note, Announcement 탭을 구성한다.
-- Unit 1의 mock release 데이터를 사용한다.
+- CHANGELOG, QC Checklist, Release Note, Announcement 탭 표시를 고도화한다.
+- Unit 3에서 추가한 릴리즈 항목도 모든 문서 미리보기에 일관되게 반영되게 한다.
+- 필요한 표시 라벨/상수 중앙화를 검토하고 적용한다.
+- 핵심 문서 미리보기 흐름 테스트를 보강한다.
 
 제외:
-- 릴리즈 항목 등록 폼 구현
 - QC 상태 변경
-- export 구현
+- export/clipboard 구현
 - 실제 API 연동
-- TanStack Query/MSW 연동
+- Google Drive 백업
 
 검증:
 - pnpm lint

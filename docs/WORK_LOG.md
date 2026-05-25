@@ -14,7 +14,7 @@
 | Unit 0 | Done | Claude Code | PASS WITH WARNINGS | repo 루트 pnpm 검증 통과 |
 | Unit 1 | Done | Claude Code | PASS WITH WARNINGS | 도메인 모델/mock/순수 함수 |
 | Unit 2 | Done | Claude Code | PASS WITH WARNINGS | 목록/상세 기본 화면 |
-| Unit 3 | Draft | Claude Code | 구현 전 | 릴리즈 항목 폼 |
+| Unit 3 | Done | Claude Code/Codex | PASS | 릴리즈 항목 폼, 리뷰 Warning 보완 완료 |
 | Unit 4 | Draft | Claude Code | 구현 전 | 문서 미리보기 |
 | Unit 5 | Draft | Claude Code | 구현 전 | QC 상태 UX |
 | Unit 6 | Draft | Claude Code | 구현 전 | Export/복사 |
@@ -22,6 +22,125 @@
 | Unit 8 | Draft | Claude Code | 구현 전 | 테스트/문서 정리 |
 
 ## 2. 단위 작업 결과
+
+---
+
+## 2026-05-25 / Unit 3 보완 — 리뷰 Warning 처리와 종료
+
+### 작업 브랜치
+
+- `main` (커밋 없음)
+
+### 변경 파일
+
+| 파일 | 변경 유형 | 내용 |
+| --- | --- | --- |
+| `src/features/release-item-form/model/schema.ts` | 수정 | `CHANGE_CATEGORY` SSOT 기반 Zod enum 파생, 폼 전용 `gitlabSourceUrl` 추가 |
+| `src/features/release-item-form/model/mapGitlabToReleaseItemFormValues.ts` | 수정 | 자동 채움 값 타입 export |
+| `src/features/release-item-form/ui/ReleaseItemForm.tsx` | 수정 | Issue/MR URL 저장 필드 분리, 자동 채움 검증 상태 동기화, Issue/MR select controlled 처리 |
+| `src/features/release-item-form/ui/ReleaseItemForm.test.tsx` | 수정 | MR URL 저장 계약, 자동 채움 후 에러 해소, select 동기화 회귀 테스트 추가 |
+| `src/pages/release-detail/ui/ReleaseDetailPage.tsx` | 수정 | `releaseId` 변경 시 items/form state 재초기화 |
+| `src/pages/release-detail/ui/ReleaseDetailPage.test.tsx` | 신규 | 상세 제출 후 문서 탭 반영, releaseId 변경 초기화 통합 테스트 |
+
+### 보완 내용
+
+- URL 직접 입력용 필드를 `gitlabSourceUrl`로 분리해 MR URL이 `ReleaseItem.gitlabIssueUrl`에 저장되지 않도록 수정.
+- 자동 채움 `setValue`에 `{ shouldValidate: true, shouldDirty: true }`를 적용해 검증 에러가 즉시 해소되도록 수정.
+- Issue/MR 드롭다운을 controlled 상태로 전환해 마지막 선택 기준이 UI에 일관되게 표시되도록 수정.
+- Zod `category` enum을 `CHANGE_CATEGORY` 상수에서 파생해 변경 유형 SSOT 중복을 제거.
+- 상세 페이지가 같은 컴포넌트 인스턴스에서 다른 `releaseId`를 받으면 해당 릴리즈 항목으로 다시 초기화되도록 보완.
+- Unit 3 완료 기준인 “제출 후 문서 탭 반영”을 `ReleaseDetailPage` 통합 테스트로 추가.
+
+### 테스트 및 검증
+
+```bash
+pnpm lint      # ✅ PASS
+pnpm test      # ✅ PASS (44/44)
+pnpm typecheck # ✅ PASS
+pnpm build     # ✅ PASS (131 modules)
+```
+
+### 종료 판단
+
+- Unit 3 리뷰 Warning 6건을 모두 보완 완료.
+- Critical 없음.
+- Unit 4 착수 가능.
+
+---
+
+## 2026-05-25 / Unit 3 — 릴리즈 항목 폼과 GitLab mock import 흐름
+
+### 작업 브랜치
+
+- `main` (커밋 없음)
+
+### 변경 파일
+
+| 파일 | 변경 유형 | 내용 |
+| --- | --- | --- |
+| `src/shared/lib/createId.ts` | 신규 | 충돌 가능성이 낮은 로컬 ID 생성 유틸리티 |
+| `src/features/release-item-form/model/schema.ts` | 신규 | Zod v4 기반 릴리즈 항목 폼 스키마 및 inferred 타입 |
+| `src/features/release-item-form/model/mapGitlabToReleaseItemFormValues.ts` | 신규 | GitlabIssue/GitlabMergeRequest → 폼 자동 채움 값 매핑 함수 |
+| `src/features/release-item-form/ui/ReleaseItemForm.tsx` | 신규 | React Hook Form + zodResolver 기반 릴리즈 항목 생성 폼 |
+| `src/features/release-item-form/ui/ReleaseItemForm.test.tsx` | 신규 | 폼 흐름 RTL 테스트 7개 |
+| `src/features/release-item-form/index.ts` | 신규 | release-item-form 피처 public API |
+| `src/features/index.ts` | 수정 | release-item-form 슬라이스 re-export 추가 |
+| `src/pages/release-detail/ui/ReleaseDetailPage.tsx` | 수정 | items를 useState로 관리 (getMockReleaseItems 초기값), ReleaseItemForm 인라인 표시 |
+| `src/widgets/release-list/ui/ReleaseListPanel.tsx` | 수정 | `<tr onClick>` 제거 → 버전 셀에 `<button>` 추가 (접근성 개선) |
+| `docs/WORK_LOG.md` | 수정 | Unit 3 결과 기록 |
+| `docs/SESSION_STATE.md` | 수정 | 현재 상태 갱신 |
+
+### 구현 내용
+
+- **의존성 추가**: `react-hook-form ^7.76.1`, `zod ^4.4.3`, `@hookform/resolvers ^5.4.0` (pnpm으로 설치).
+- **Zod 스키마**: 필수 필드(ticketNumber, title, category, isPublic, changelogSummary, userDescription, assigneeName)와 선택 필드(testScenario, expectedResult, gitlabIssueUrl, gitlabMergeRequestUrl)를 단일 SSOT 스키마로 정의.
+- **GitLab 연동 (3가지 방법)**:
+  1. Issue 선택 드롭다운 → `MOCK_GITLAB_ISSUES` 목록, 선택 시 제목/이슈번호/담당자/URL 자동 채움
+  2. MR 선택 드롭다운 → `MOCK_GITLAB_MRS` 목록, 선택 시 제목/티켓번호/담당자/URL 자동 채움
+  3. URL 직접 입력 → `useEffect`로 `watch('gitlabIssueUrl')` 감시, 정확 매칭 시 필드 자동 채움
+- **폼 제출**: 정상 제출 시 `ReleaseItem` 타입에 맞는 객체 생성, `onSubmit` 콜백으로 전달. testScenario+expectedResult 모두 입력 시 `QCTestCase` 1개 생성.
+- **상태 리프팅**: `ReleaseDetailPage`가 `items: ReleaseItem[]`을 `useState`로 소유. 폼 제출 시 `setItems(prev => [...prev, newItem])` → `ReleaseDocumentTabs`에 전달되어 모든 탭에 즉시 반영.
+- **접근성 보완**: `<tr onClick>` 제거 → 버전 셀 `<td>` 내에 `<button>` 배치. 키보드 접근·포커스 가능한 인터랙션으로 개선.
+- **FSD 준수**: `features/release-item-form`은 `@entities/release`와 `@shared/lib/createId`만 import. `pages/release-detail`은 `@features/release-item-form` public API를 통해 import.
+
+### 테스트 및 검증
+
+```bash
+pnpm lint      # ✅ PASS (EXIT 0)
+pnpm test      # ✅ PASS (39/39: 신규 7개 + 기존 32개)
+pnpm typecheck # ✅ PASS (EXIT 0)
+pnpm build     # ✅ PASS (131 modules)
+```
+
+| 명령 | 결과 | 비고 |
+| --- | --- | --- |
+| `pnpm lint` | ✅ PASS | 신규 파일 포함 0 errors |
+| `pnpm test` | ✅ PASS (39/39) | ReleaseItemForm 7개 신규 |
+| `pnpm typecheck` | ✅ PASS | strict mode, no `any` |
+| `pnpm build` | ✅ PASS | 131 modules (의존성 추가로 증가) |
+
+### 테스트 목록 (ReleaseItemForm.test.tsx)
+
+1. GitLab Issue 선택 시 제목·이슈 번호·담당자가 자동 채워진다
+2. GitLab MR 선택 시 제목·티켓 번호·담당자가 자동 채워진다
+3. GitLab Issue URL 입력 시 매칭된 issue 기본 정보가 채워진다
+4. 필수 필드가 비어 있으면 검증 메시지가 표시되고 onSubmit이 호출되지 않는다
+5. 정상 제출 시 onSubmit이 releaseId와 입력값을 포함한 ReleaseItem으로 호출된다
+6. 테스트 시나리오와 기대 결과 모두 입력 시 testCases가 1개 생성된다
+7. 취소 버튼 클릭 시 onCancel이 호출된다
+
+### 남은 리스크
+
+1. **URL 자동 채움은 정확한 URL 일치만 지원**: MOCK_GITLAB_ISSUES/MRS의 `webUrl`과 완전히 일치하는 경우에만 자동 채움. 부분 매칭/퍼지 검색은 미구현.
+2. **탭 상태 URL 미반영 (Unit 2에서 이월)**: 탭 선택이 local state. 새로고침 시 Overview 탭으로 초기화.
+3. **릴리즈 항목 영구 저장 없음**: 새로고침 시 mock 초기 데이터로 복구. 백엔드 연동 전까지는 설계 의도대로 ephemeral.
+
+### 리뷰 요청 포인트
+
+1. `useEffect`로 `watch('gitlabIssueUrl')`를 감시해 URL 자동 채움 구현. 매 키 입력마다 MOCK 배열을 순회하므로 실제 API 연동 시 debounce 추가 필요.
+2. `handleIssueSelect` / `handleMrSelect`에서 `setValue`를 5회 개별 호출. RHF의 `reset(partialValues)` 또는 단일 배치 업데이트로 개선 가능하나 MVP 범위에서는 현행 유지.
+3. `category` 필드의 inferred type (`"MAJOR" | "MINOR" | "PATCH" | "BUGFIX"`)이 `ChangeCategory`와 구조적으로 동일하나 선언적으로는 별도 타입. 추후 Zod schema에서 CHANGE_CATEGORY 상수를 직접 참조하도록 개선 가능.
+4. GitLab 연동 드롭다운(`<select>`)이 RHF에 등록되지 않은 uncontrolled select. 다수의 GitLab 항목 간 선택 시 드롭다운이 이전 선택값을 표시하는 시각적 피드백 없음. UX 개선은 Unit 7에서 고려 가능.
 
 ---
 
