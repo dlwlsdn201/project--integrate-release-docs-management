@@ -8,6 +8,7 @@ export {
   TEST_STATUS,
   CHANGE_CATEGORY_LABEL,
   RELEASE_STATUS_LABEL,
+  TEST_STATUS_LABEL,
   CHANGELOG_CATEGORY_ORDER,
 } from './model/constants';
 export type { ReleaseStatus, ChangeCategory, TestStatus } from './model/constants';

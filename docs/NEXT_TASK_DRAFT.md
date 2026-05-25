@@ -1,53 +1,58 @@
-# Next Task Draft — Unit 4 문서 미리보기 고도화
+# Next Task Draft — Unit 5 QC 체크리스트 상태 UX
 
 ## 0. 문서 목적
 
-이 문서는 Unit 3 완료 후 착수할 다음 작업 후보를 정리한다. Unit 3 리뷰가 PASS 또는 PASS WITH WARNINGS 상태가 되면 이 내용을 `CURRENT_TASK.md`로 승격한다.
+이 문서는 Unit 4 완료 후 착수할 다음 작업 후보를 정리한다. Unit 5 착수 시 이 내용을 `CURRENT_TASK.md`로 승격한다.
 
 ## 1. 다음 작업 후보
 
-Unit 4 — CHANGELOG, QC Checklist, Release Note, Announcement 미리보기 구현 고도화
+Unit 5 — QC 체크리스트 상태 변경 및 실패/차단 사유 입력 UX
 
 ## 2. 선행 작업과의 연결점
 
-- Unit 1에서 release 도메인 타입, mock 데이터, 문서 생성 순수 함수를 구성했다.
-- Unit 2에서 릴리즈 목록/상세 화면과 문서 탭 기본 구조를 만들었다.
-- Unit 3에서 사용자가 폼으로 추가한 릴리즈 항목이 상세 화면 상태에 반영된다.
-- Unit 4는 같은 원본 데이터에서 생성되는 문서 미리보기의 정보 구조와 읽기 품질을 개선한다.
+- Unit 1에서 `QCTestCase`, `TEST_STATUS`, mock 테스트 케이스 데이터를 구성했다.
+- Unit 2에서 릴리즈 목록과 상세 문서 탭 기본 화면을 만들었다.
+- Unit 3에서 폼 제출 시 `testScenario` + `expectedResult` 입력으로 테스트 케이스가 생성된다.
+- Unit 4에서 QC Checklist 미리보기와 상태별 요약 구조를 개선했고, `TEST_STATUS_LABEL`을 `entities/release`로 중앙화했다.
+- Unit 5는 QC 상태를 사용자가 변경하고, 변경 결과가 목록/상세/문서 탭에 반영되게 하는 작업이다.
 
 ## 3. 예상 범위
 
 ### 포함 후보
 
-- CHANGELOG 미리보기 레이아웃 개선
-- QC Checklist 표 구조 개선
-- Release Note 카드/섹션 구조 개선
-- Announcement 텍스트 미리보기 개선
-- 공개/비공개 항목 표시 정책 정리
-- 문서 생성 결과가 사용자 추가 항목과 일관되게 반영되는지 테스트 보강
+- QC Checklist 탭에서 테스트 케이스 상태 변경 UI 구현
+  - Not Started
+  - Passed
+  - Failed
+  - Blocked
+- Failed/Blocked 상태 선택 시 사유 입력 UX 구현
+- 상태 변경 시 현재 릴리즈 상세의 items state에 반영
+- QC 진행률이 릴리즈 목록 또는 상세 표시와 일관되게 계산되도록 정리
+- `TEST_STATUS_LABEL`과 기존 QC 요약 구조 재사용
+- 핵심 상태 변경 흐름 RTL 테스트 보강
 
 ### 제외 후보
 
-- QC 상태 변경
-- 실패 사유 입력
+- 실제 저장 API
+- TanStack Query/MSW 연동
+- 릴리즈 항목 삭제
+- 이미지 업로드
 - CSV/HTML/JSON export
 - clipboard 복사
-- 실제 API 연동
 - Google Drive 백업
 
 ## 4. 설계 메모
 
-- Unit 1 순수 함수의 반환 구조를 우선 사용한다.
-- 위젯 내부에서 반복되는 표시 라벨은 `entities/release` constants로 올릴지 검토한다.
-- Unit 2 Warning의 탭 URL 상태 반영을 Unit 4에서 같이 처리할지 결정한다.
-- Release Note는 일반 사용자가 읽기 쉬운 구조를 우선한다.
-- Announcement는 Unit 6에서 clipboard 복사가 붙을 예정이므로 텍스트 구조를 유지한다.
+- 상태 변경 기능은 사용자 상호작용이므로 `features` 레이어 후보로 본다.
+- 다만 테스트 케이스 상태 업데이트 계산은 release 도메인 데이터 구조에 밀접하므로 순수 helper를 `entities/release`에 둘지 검토한다.
+- 페이지 경계(`ReleaseDetailPage`)가 현재 items state를 소유하므로, Unit 5에서도 상태 변경의 최종 소유자는 page에 두는 방향이 자연스럽다.
+- `ReleaseDocumentTabs`가 상태 변경 UI까지 직접 소유하면 위젯 책임이 커질 수 있으므로, feature 컴포넌트로 분리하거나 callback prop을 받는 구조를 검토한다.
 
 ## 5. 착수 전 결정 필요 사항
 
-1. 탭 상태를 Unit 4에서 URL에 반영할지, Unit 7로 넘길지 결정한다.
-2. `TEST_STATUS_LABEL`을 `entities/release`로 중앙화할지 결정한다.
-3. Release Note에 Before/After 이미지 placeholder를 Unit 4에서 표시할지 결정한다.
+1. QC 상태 변경 UI를 `ReleaseDocumentTabs` 내부에 둘지, 별도 `features/qc-test-status` 슬라이스로 분리할지 결정한다.
+2. 실패/차단 사유 입력을 inline textarea로 둘지, 상태 선택 후 조건부 input으로 둘지 결정한다.
+3. QC 진행률 계산 helper를 `widgets/release-list` 내부 유지할지, `entities/release`로 이동할지 결정한다.
 
 ## 6. 예상 검증
 
@@ -67,26 +72,25 @@ pnpm typecheck
 pnpm build
 ```
 
-## 7. Claude Code 지시 프롬프트 초안
+## 7. 구현 지시 프롬프트 초안
 
 ```text
-너는 이 repo의 구현 담당 Claude Code다. Unit 4 문서 미리보기 고도화 작업을 수행해라.
-
-작업 전 반드시 AGENTS.md, PRD.mdc, docs/PROJECT_GUIDE.md, docs/CURRENT_TASK.md, docs/WORK_LOG.md, docs/REVIEW_LOG.md, docs/SESSION_STATE.md를 읽어라.
+Unit 5 QC 체크리스트 상태 변경 및 실패/차단 사유 입력 UX를 구현한다.
 
 목표:
-같은 릴리즈 원본 데이터에서 생성되는 CHANGELOG, QC Checklist, Release Note, Announcement 미리보기의 정보 구조와 읽기 품질을 개선한다.
+릴리즈 상세 화면의 QC Checklist에서 테스트 케이스 상태를 변경하고, Failed/Blocked 상태에서는 사유를 입력할 수 있게 한다. 변경 결과는 현재 릴리즈 상세의 QC 요약과 문서 탭에 즉시 반영되어야 한다.
 
 범위:
-- CHANGELOG, QC Checklist, Release Note, Announcement 탭 표시를 고도화한다.
-- Unit 3에서 추가한 릴리즈 항목도 모든 문서 미리보기에 일관되게 반영되게 한다.
-- 필요한 표시 라벨/상수 중앙화를 검토하고 적용한다.
-- 핵심 문서 미리보기 흐름 테스트를 보강한다.
+- QC 테스트 케이스 상태 변경 UI를 구현한다.
+- Failed/Blocked 상태에서 사유 입력을 제공한다.
+- 상태 변경 결과를 ReleaseDetailPage의 items state에 반영한다.
+- QC 진행률 계산 구조를 재사용 가능하게 정리한다.
+- 핵심 상태 변경 흐름 RTL 테스트를 작성한다.
 
 제외:
-- QC 상태 변경
+- 실제 API 저장
 - export/clipboard 구현
-- 실제 API 연동
+- 이미지 업로드
 - Google Drive 백업
 
 검증:
@@ -96,7 +100,8 @@ pnpm build
 - pnpm build
 
 완료 후:
-- docs/WORK_LOG.md에 작업 결과를 기록해라.
-- docs/SESSION_STATE.md를 최신 상태로 갱신해라.
-- 커밋은 하지 마라.
+- docs/WORK_LOG.md에 작업 결과를 기록한다.
+- docs/REVIEW_LOG.md에 자체 리뷰 결과를 기록한다.
+- docs/SESSION_STATE.md를 최신 상태로 갱신한다.
+- 커밋은 하지 않는다.
 ```

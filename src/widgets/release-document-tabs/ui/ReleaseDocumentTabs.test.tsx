@@ -21,10 +21,9 @@ describe('ReleaseDocumentTabs', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'CHANGELOG' }));
 
     expect(screen.getByRole('tab', { name: 'CHANGELOG' })).toHaveAttribute('aria-selected', 'true');
-    // CHANGELOG shows category group headings
-    expect(screen.getByText('Major')).toBeInTheDocument();
-    expect(screen.getByText('Minor')).toBeInTheDocument();
-    // CHANGELOG shows item summaries
+    expect(screen.getByText('v1.8.0 릴리즈')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Major 2건' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Minor 2건' })).toBeInTheDocument();
     expect(screen.getByText('로그인 실패 안내 문구 개선')).toBeInTheDocument();
   });
 
@@ -33,8 +32,10 @@ describe('ReleaseDocumentTabs', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'QC Checklist' }));
 
+    expect(screen.getByText('총 4개 테스트 케이스')).toBeInTheDocument();
+    expect(screen.getByText('Passed 2')).toBeInTheDocument();
+    expect(screen.getByText('Not Started 2')).toBeInTheDocument();
     expect(screen.getByText('로그인 실패 시 에러 메시지 확인')).toBeInTheDocument();
-    // Multiple PASSED cells exist (tc-001, tc-002 are both PASSED)
     expect(screen.getAllByText('Passed').length).toBeGreaterThan(0);
   });
 
@@ -43,9 +44,9 @@ describe('ReleaseDocumentTabs', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Release Note' }));
 
-    // isPublic=true items are shown
+    expect(screen.getByText('공개 항목 3개')).toBeInTheDocument();
+    expect(screen.getByText('비공개 항목 1개')).toBeInTheDocument();
     expect(screen.getByText('로그인 실패 안내 문구 개선')).toBeInTheDocument();
-    // ri-004 '알림 목록 UI 개선' is isPublic=false and must NOT appear
     expect(screen.queryByText('알림 목록 UI 개선')).not.toBeInTheDocument();
   });
 
@@ -54,10 +55,11 @@ describe('ReleaseDocumentTabs', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Announcement' }));
 
-    // Announcement text is inside <pre> to avoid multi-match from ancestor elements
-    expect(
-      screen.getByText(/v1\.8\.0 릴리즈 변경사항/, { selector: 'pre' }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/#개발팀/, { selector: 'pre' })).toBeInTheDocument();
+    const announcementPreview = screen.getByRole('textbox', {
+      name: '공지문 미리보기',
+    }) as HTMLTextAreaElement;
+
+    expect(announcementPreview.value).toContain('v1.8.0 릴리즈 변경사항');
+    expect(announcementPreview.value).toContain('#개발팀');
   });
 });

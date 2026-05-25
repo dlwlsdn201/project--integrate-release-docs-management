@@ -15,13 +15,76 @@
 | Unit 1 | Done | Claude Code | PASS WITH WARNINGS | 도메인 모델/mock/순수 함수 |
 | Unit 2 | Done | Claude Code | PASS WITH WARNINGS | 목록/상세 기본 화면 |
 | Unit 3 | Done | Claude Code/Codex | PASS | 릴리즈 항목 폼, 리뷰 Warning 보완 완료 |
-| Unit 4 | Draft | Claude Code | 구현 전 | 문서 미리보기 |
-| Unit 5 | Draft | Claude Code | 구현 전 | QC 상태 UX |
-| Unit 6 | Draft | Claude Code | 구현 전 | Export/복사 |
-| Unit 7 | Draft | Claude Code | 구현 전 | UI Polish |
-| Unit 8 | Draft | Claude Code | 구현 전 | 테스트/문서 정리 |
+| Unit 4 | Done | Codex | PASS | 문서 미리보기 고도화 |
+| Unit 5 | Draft | Codex | 구현 전 | QC 상태 UX |
+| Unit 6 | Draft | Codex | 구현 전 | Export/복사 |
+| Unit 7 | Draft | Codex | 구현 전 | UI Polish |
+| Unit 8 | Draft | Codex | 구현 전 | 테스트/문서 정리 |
 
 ## 2. 단위 작업 결과
+
+---
+
+## 2026-05-26 / Unit 4 — 문서 미리보기 고도화
+
+### 작업 브랜치
+
+- `main` (커밋 없음)
+
+### 변경 파일
+
+| 파일 | 변경 유형 | 내용 |
+| --- | --- | --- |
+| `docs/CURRENT_TASK.md` | 수정 | Unit 4 작업 범위와 완료 기준으로 갱신 |
+| `src/entities/release/model/constants.ts` | 수정 | `TEST_STATUS_LABEL` SSOT 추가 |
+| `src/entities/release/index.ts` | 수정 | `TEST_STATUS_LABEL` public API export 추가 |
+| `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx` | 수정 | CHANGELOG/QC/Release Note/Announcement 미리보기 정보 구조 개선 |
+| `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx` | 수정 | 문서 미리보기 정보 구조 회귀 테스트 보강 |
+| `docs/WORK_LOG.md` | 수정 | Unit 4 결과 기록 |
+| `docs/REVIEW_LOG.md` | 수정 | Unit 4 자체 리뷰 결과 기록 |
+| `docs/SESSION_STATE.md` | 수정 | 현재 상태 갱신 |
+| `docs/NEXT_TASK_DRAFT.md` | 수정 | Unit 5 초안으로 갱신 |
+
+### 구현 내용
+
+- **CHANGELOG 미리보기 개선**: 릴리즈 제목/버전 맥락을 표시하고, 변경 유형별 그룹 heading에 항목 수(`Major 2건` 등)를 함께 표시.
+- **QC Checklist 개선**: 전체 테스트 케이스 수와 상태별 분포(`Passed`, `Not Started`, `Failed`, `Blocked`)를 상단 요약으로 표시.
+- **Release Note 개선**: 공개/비공개 항목 수를 표시하고, 공개 항목만 사용자용 설명 중심의 섹션 구조로 렌더링.
+- **Announcement 개선**: 기존 `generateAnnouncement` 텍스트를 유지하되, Unit 6 clipboard 버튼 전 단계로 선택/복사가 쉬운 read-only textarea 형태로 표시.
+- **상수 중앙화**: 위젯 내부 local `TEST_STATUS_LABEL`을 `entities/release` constants로 이동하고 public API로 노출.
+- **TDD 적용**: Unit 4 정보 구조 테스트를 먼저 작성해 RED를 확인한 뒤 구현.
+
+### 테스트 및 검증
+
+```bash
+pnpm lint      # ✅ PASS
+pnpm test      # ✅ PASS (44/44)
+pnpm typecheck # ✅ PASS
+pnpm build     # ✅ PASS (131 modules)
+```
+
+추가 확인:
+
+- `git diff --check` PASS
+- FSD deep import 검색 결과 없음
+- `any`, `TODO`, `FIXME` 검색 결과 없음
+- Vite dev server 기동 확인: `http://127.0.0.1:5173/` HTTP 200 확인
+
+### 자체 리뷰 결과
+
+- 최종 판단: PASS
+- Critical: 없음
+- Warning: 없음
+
+### 남은 리스크
+
+1. **탭 상태 URL 미반영**: Unit 2에서 이월된 local tab state는 유지. 공유 가능한 탭 URL은 Unit 7에서 처리하는 편이 범위상 적절하다.
+2. **실제 브라우저 시각 QA 제한**: 현재 세션에서 Browser 자동화 도구가 노출되지 않아 HTTP 응답 확인까지만 수행. RTL/빌드 검증은 통과했다.
+
+### 후속 권장 사항
+
+- Unit 5에서 QC 상태 변경 UX를 구현할 때 이번에 중앙화한 `TEST_STATUS_LABEL`과 상태 요약 구조를 그대로 재사용한다.
+- Unit 6에서 Announcement textarea 위에 clipboard API 기반 복사 버튼을 추가한다.
 
 ---
 

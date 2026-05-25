@@ -39,6 +39,13 @@ export const RELEASE_STATUS_LABEL: Record<ReleaseStatus, string> = {
   ARCHIVED: 'Archived',
 };
 
+export const TEST_STATUS_LABEL: Record<TestStatus, string> = {
+  NOT_STARTED: 'Not Started',
+  PASSED: 'Passed',
+  FAILED: 'Failed',
+  BLOCKED: 'Blocked',
+};
+
 export const CHANGELOG_CATEGORY_ORDER: readonly ChangeCategory[] = [
   CHANGE_CATEGORY.MAJOR,
   CHANGE_CATEGORY.MINOR,

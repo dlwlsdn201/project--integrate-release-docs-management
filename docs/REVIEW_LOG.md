@@ -11,6 +11,76 @@
 
 ---
 
+## 2026-05-26 / Unit 4 — 문서 미리보기 고도화
+
+### 최종 판단
+
+- PASS
+
+### Critical
+
+- 없음
+
+### Warning
+
+- 없음
+
+### 리뷰 결과
+
+- `CURRENT_TASK.md` 범위 충족: CHANGELOG 그룹별 건수, QC 상태 요약, Release Note 공개/비공개 메타, Announcement read-only 텍스트 표시가 구현됨.
+- FSD 레이어 준수: `widgets/release-document-tabs`는 `@entities/release` public API만 사용하며 deep import 없음.
+- 데이터 계약 정합성: 문서 생성은 기존 `generateChangelog`, `generateQcChecklist`, `generateReleaseNote`, `generateAnnouncement` 결과를 유지하고 표시 구조만 개선함.
+- SSOT 개선: `TEST_STATUS_LABEL`을 `entities/release` constants로 중앙화하고 public API로 export함.
+- 테스트 방어력: `ReleaseDocumentTabs.test.tsx`가 문서별 핵심 정보 구조를 role/text/value 기반으로 검증함.
+- 타입/품질: `any`, `TODO`, `FIXME` 없음. `git diff --check` 통과.
+
+### 검증 결과
+
+현재 repo 루트에서 재실행:
+
+```bash
+pnpm lint
+```
+
+- 결과: PASS
+
+```bash
+pnpm test
+```
+
+- 결과: PASS
+- 상세: 6개 테스트 파일, 44개 테스트 통과
+
+```bash
+pnpm typecheck
+```
+
+- 결과: PASS
+
+```bash
+pnpm build
+```
+
+- 결과: PASS
+- 상세: `tsc -b && vite build`, 131 modules transformed
+
+추가 검증:
+
+- `git diff --check`: PASS
+- FSD deep import 검색: 위반 없음
+- Vite dev server HTTP 200 확인
+
+### 보완 요청
+
+- 없음. Unit 4 종료 가능.
+
+### 후속 권장 사항
+
+- Unit 5에서 QC 상태 변경 후 목록/상세/문서 탭의 진행률과 상태 요약이 함께 갱신되는지 테스트로 방어한다.
+- Unit 6에서 Announcement read-only textarea에 clipboard 복사 버튼을 추가한다.
+
+---
+
 ## 2026-05-25 / Unit 3 보완 — 릴리즈 항목 폼과 GitLab mock import 흐름
 
 ### 최종 판단

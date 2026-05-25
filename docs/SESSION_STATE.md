@@ -7,15 +7,14 @@
 ## 1. 현재 상태
 
 - 현재 브랜치: `main`
-- 현재 작업: Unit 3 보완 완료 — Unit 4 착수 대기
-- 마지막 완료 작업: Unit 3 릴리즈 항목 폼과 GitLab mock import 흐름 (2026-05-25)
+- 현재 작업: Unit 4 완료 — Unit 5 착수 대기
+- 마지막 완료 작업: Unit 4 문서 미리보기 고도화 (2026-05-26)
 - 마지막 커밋: `c0693a4` ✨ 릴리즈 도메인 모델과 문서 생성 함수 추가
-- 커밋 여부: 미커밋 (Unit 1 + Unit 2 + Unit 3 변경사항이 worktree에 있음)
-- 리뷰 상태: Unit 3 PASS
+- 커밋 여부: 미커밋 (Unit 1 + Unit 2 + Unit 3 + Unit 4 변경사항이 worktree에 있음)
+- 리뷰 상태: Unit 4 PASS
 
 ## 2. 미완료 작업
 
-- Unit 4 문서 미리보기
 - Unit 5 QC 체크리스트 상태 UX
 - Unit 6 Export와 공지문 복사
 - Unit 7 UI Polish
@@ -23,8 +22,8 @@
 
 ## 3. 현재 worktree 주의사항
 
-- Unit 1 + Unit 2 + Unit 3 신규 파일들이 미커밋 상태다.
-- `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` 모두 PASS (2026-05-25 기준).
+- Unit 1 + Unit 2 + Unit 3 + Unit 4 변경사항이 미커밋 상태다.
+- `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` 모두 PASS (2026-05-26 기준).
   - test: 44/44 (Unit 1 22개 + App smoke 2개 + ReleaseListPage 3개 + ReleaseDocumentTabs 5개 + ReleaseDetailPage 2개 + ReleaseItemForm 10개)
   - build: 131 modules
 - Unit 3에서 추가/수정된 파일:
@@ -39,11 +38,19 @@
   - `src/pages/release-detail/ui/ReleaseDetailPage.test.tsx` (신규, 테스트 2개)
   - `src/widgets/release-list/ui/ReleaseListPanel.tsx` (수정 — `<tr onClick>` → `<button>` 접근성 개선)
 - 추가된 의존성: `react-hook-form ^7.76.1`, `zod ^4.4.3`, `@hookform/resolvers ^5.4.0`
+- Unit 4에서 추가/수정된 파일:
+  - `src/entities/release/model/constants.ts` (`TEST_STATUS_LABEL` 추가)
+  - `src/entities/release/index.ts` (`TEST_STATUS_LABEL` export)
+  - `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx` (문서 미리보기 정보 구조 개선)
+  - `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx` (문서 탭 테스트 보강)
+  - `docs/CURRENT_TASK.md` (Unit 4 범위)
+  - `docs/NEXT_TASK_DRAFT.md` (Unit 5 초안)
+  - `docs/WORK_LOG.md`, `docs/REVIEW_LOG.md`, `docs/SESSION_STATE.md`
 
 ## 4. 다음 액션
 
-1. `docs/NEXT_TASK_DRAFT.md`를 참고해 Unit 4를 준비한다.
-2. Claude Code가 `docs/CURRENT_TASK.md`를 Unit 4 내용으로 갱신하고 구현한다.
+1. `docs/NEXT_TASK_DRAFT.md`를 참고해 Unit 5를 준비한다.
+2. QC 상태 변경 UX 착수 전 Unit 4의 `TEST_STATUS_LABEL`과 QC 요약 구조를 재사용할 범위를 결정한다.
 
 ## 5. 재개 시 읽을 문서
 

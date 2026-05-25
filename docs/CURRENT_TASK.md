@@ -1,10 +1,10 @@
-# Current Task — Unit 3 릴리즈 항목 폼과 GitLab mock import 흐름
+# Current Task — Unit 4 문서 미리보기 고도화
 
 ## 0. 작업 요약
 
-ReleaseHub에서 릴리즈 상세 화면에 새 릴리즈 항목을 추가할 수 있는 폼 흐름을 구현한다.
+ReleaseHub 상세 화면의 문서 탭(CHANGELOG, QC Checklist, Release Note, Announcement)을 같은 릴리즈 원본 데이터에서 더 읽기 좋은 미리보기로 표시한다.
 
-Unit 1에서 만든 release/GitLab mock 데이터와 Unit 2에서 만든 목록/상세 화면을 연결하여, 사용자가 GitLab Issue/MR mock 데이터를 선택하거나 URL을 입력하면 기본 정보가 채워지고, React Hook Form + Zod 검증을 통과한 항목이 현재 릴리즈 상세 데이터에 반영되게 한다.
+Unit 1의 문서 생성 순수 함수와 Unit 3의 릴리즈 항목 추가 흐름은 유지한다. Unit 4는 데이터 생성 로직을 새로 만들기보다, 이미 생성된 문서 데이터를 사용자가 검토하기 쉬운 정보 구조로 표현하는 데 집중한다.
 
 ## 1. 반드시 읽을 문서
 
@@ -25,110 +25,70 @@ Unit 1에서 만든 release/GitLab mock 데이터와 Unit 2에서 만든 목록/
 
 ### 포함
 
-- React Hook Form + Zod 기반 릴리즈 항목 생성 폼 구현
-- 필요한 폼 의존성 추가
-  - `react-hook-form`
-  - `zod`
-  - `@hookform/resolvers`
-- GitLab Issue/MR mock 데이터 선택 또는 URL 입력으로 기본 정보 채우기
-- 릴리즈 항목 필드 검증
-  - 이슈 번호 또는 티켓 번호
-  - 제목
-  - 릴리즈 버전/대상 releaseId
-  - 변경 유형
-  - 사용자 노출 여부
-  - CHANGELOG 요약
-  - 사용자용 설명
-  - 테스트 시나리오
-  - 기대 결과
-  - 담당자
-- 성공 시 현재 릴리즈 상세 데이터에 새 항목 반영
-- 성공 시 폼 닫기 또는 초기화
-- 실패 시 폼 유지 및 검증 메시지 표시
-- Unit 2 Warning 중 접근성 보완 1개 처리
-  - 릴리즈 목록의 `<tr onClick>`를 포커스 가능한 `<button>` 또는 `<a>` 기반 상호작용으로 개선
-- 핵심 폼 흐름 테스트 작성
-  - mock GitLab 선택 시 필드 자동 채움
-  - 필수값 누락 시 검증 메시지 표시
-  - 정상 제출 시 상세 화면 항목 추가
+- CHANGELOG 탭 정보 구조 개선
+  - 릴리즈 버전/제목 맥락 표시
+  - 변경 유형별 그룹과 항목 수 표시
+  - 티켓 번호, 변경 요약을 스캔하기 쉬운 구조로 표시
+- QC Checklist 탭 정보 구조 개선
+  - 테스트 케이스 총량과 상태별 분포 표시
+  - 테스트 대상 항목, 시나리오, 기대 결과, 상태를 표로 정리
+- Release Note 탭 정보 구조 개선
+  - 공개 항목만 일반 사용자용 카드/섹션 구조로 표시
+  - 비공개 항목 수를 별도 메타 정보로 표시
+  - 사용자용 설명을 주요 본문으로 표시
+- Announcement 탭 정보 구조 개선
+  - Unit 1의 `generateAnnouncement` 결과 텍스트를 유지
+  - Unit 6 clipboard 버튼 전 단계로, 사용자가 선택/복사하기 쉬운 read-only 텍스트 형태로 표시
+- 표시 라벨/상수 중앙화
+  - `TEST_STATUS_LABEL`을 `entities/release` constants로 이동
+- Unit 3에서 추가한 릴리즈 항목이 문서 탭에 반영되는 흐름 테스트 보강 또는 유지
 
 ### 제외
 
+- QC 상태 변경
+- 실패 사유 입력/수정
+- CSV/HTML/JSON export
+- clipboard API 기반 복사 버튼
 - 실제 GitLab API 연동
 - TanStack Query/MSW 연동
-- 백엔드 저장
-- 릴리즈 항목 영구 저장
-- 릴리즈 항목 삭제
-- QC 상태 변경
-- 실패 사유 입력
+- Google Drive 백업
 - 이미지 업로드
-- CSV/HTML/JSON export
-- clipboard 복사
-- 복잡한 Dialog 시스템 또는 전역 modal store 도입
+- 복잡한 전역 상태 관리
 - 커밋
 
 ## 3. 예상 변경 파일
 
-### 신규 후보
+### 수정 후보
 
-- `src/features/release-item-form/index.ts`
-- `src/features/release-item-form/model/schema.ts`
-- `src/features/release-item-form/model/types.ts`
-- `src/features/release-item-form/model/mapGitlabToReleaseItemFormValues.ts`
-- `src/features/release-item-form/ui/ReleaseItemForm.tsx`
-- `src/features/release-item-form/ui/ReleaseItemForm.test.tsx`
+- `src/entities/release/model/constants.ts`
+- `src/entities/release/index.ts`
+- `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx`
+- `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx`
+- `docs/WORK_LOG.md`
+- `docs/REVIEW_LOG.md`
+- `docs/SESSION_STATE.md`
 
 필요 시:
 
-- `src/shared/lib/createId.ts`
-- `src/shared/lib/formatDate.ts`
-
-### 수정 후보
-
-- `package.json`
-- `pnpm-lock.yaml`
-- `src/app/App.tsx`
-- `src/app/App.test.tsx`
-- `src/features/index.ts`
-- `src/pages/release-list/ui/ReleaseListPage.tsx`
-- `src/pages/release-list/ui/ReleaseListPage.test.tsx`
-- `src/pages/release-detail/ui/ReleaseDetailPage.tsx`
-- `src/widgets/release-list/ui/ReleaseListPanel.tsx`
-- `src/widgets/release-list/index.ts`
-- `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx`
-- `docs/WORK_LOG.md`
-- `docs/SESSION_STATE.md`
+- `src/pages/release-detail/ui/ReleaseDetailPage.test.tsx`
 
 ## 4. 구현 규칙
 
 - 패키지 매니저는 `pnpm`을 사용한다.
 - FSD 레이어 규칙을 지킨다.
-- 릴리즈 항목 생성 폼은 사용자 상호작용 기능이므로 `features/release-item-form`에 둔다.
-- `features`는 `entities`와 `shared`만 import한다.
-- `pages`는 `widgets`, `features`, `entities`를 조합한다.
-- `widgets`는 `features`를 import할 수 있지만, 폼 제출 상태의 최종 소유자는 가능하면 `app` 또는 `page` 경계에 둔다.
-- `entities/release` 내부 파일을 deep import하지 말고 public API인 `@entities/release` 또는 `@entities`를 통해 import한다.
-- Unit 3에서는 실제 API fetcher/hook을 만들지 않는다.
-- 폼 검증은 Zod schema를 SSOT로 삼고, React Hook Form resolver로 연결한다.
-- 폼 제출 성공 시 생성되는 `ReleaseItem`은 기존 Unit 1 타입을 만족해야 한다.
-- 새 항목의 `testCases`는 테스트 시나리오와 기대 결과가 모두 있을 때 1개 생성한다.
-- 새 항목의 `id`와 test case `id`는 MVP 범위에서 deterministic하거나 충돌 가능성이 낮은 local id 생성 방식으로 처리한다.
+- `widgets/release-document-tabs`는 `@entities/release` public API만 사용한다.
+- `entities/release` 내부 파일을 deep import하지 않는다.
+- 문서 생성 로직은 Unit 1의 순수 함수(`generateChangelog`, `generateQcChecklist`, `generateReleaseNote`, `generateAnnouncement`)를 우선 사용한다.
+- 새 비즈니스 규칙이 필요하면 먼저 `entities/release`의 상수/타입으로 둘지 검토한다.
 - `any`를 사용하지 않는다.
 - React 19 기준으로 불필요한 `import React`를 작성하지 않는다.
-- `useMemo`, `useCallback`, `React.memo`는 사용하지 않는다.
 - UI 테스트는 사용자 관점의 role/label/text 기반으로 작성하고, CSS 클래스나 스냅샷은 테스트하지 않는다.
-- Tailwind CSS를 사용하고 다른 스타일링 방식을 혼합하지 않는다.
-- Unit 2의 전체 화면 구조를 과도하게 재작성하지 않는다.
+- Tailwind CSS만 사용한다.
+- Unit 4 범위 밖인 export/clipboard/QC 상태 변경은 구현하지 않는다.
 
 ## 5. 테스트 및 검증
 
-의존성 추가가 필요하면 먼저 실행한다.
-
-```bash
-pnpm add react-hook-form zod @hookform/resolvers
-```
-
-그 뒤 아래 검증을 실행한다.
+아래 검증을 실행한다.
 
 ```bash
 pnpm lint
@@ -148,63 +108,40 @@ pnpm build
 
 ## 6. 완료 기준
 
-- 릴리즈 상세 화면에서 새 릴리즈 항목 생성 폼을 열 수 있다.
-- GitLab mock issue 또는 MR 선택으로 제목, URL, 담당자, 릴리즈 버전 후보 등 기본 필드가 채워진다.
-- URL 입력만으로도 매칭 가능한 mock issue/MR이 있으면 기본 필드가 채워진다.
-- 필수 필드가 비어 있으면 제출되지 않고 검증 메시지가 표시된다.
-- 정상 제출 시 현재 릴리즈 상세의 Overview/CHANGELOG/QC Checklist/Release Note/Announcement에 새 항목이 반영된다.
-- 제출 실패 또는 검증 실패 시 폼이 유지된다.
-- 릴리즈 목록의 상세 이동 인터랙션이 키보드 접근 가능한 요소로 개선된다.
+- CHANGELOG가 변경 유형별 그룹과 항목 수를 표시한다.
+- QC Checklist가 테스트 케이스 총량과 상태별 분포를 표시한다.
+- Release Note가 공개 항목 중심의 사용자용 카드/섹션 구조로 표시된다.
+- Announcement가 생성 텍스트를 선택/복사하기 쉬운 read-only 텍스트 형태로 표시한다.
+- `TEST_STATUS_LABEL`이 `entities/release` public API로 중앙화된다.
+- Unit 3에서 추가한 릴리즈 항목이 문서 탭에 반영되는 테스트가 유지되거나 보강된다.
 - FSD 레이어 역참조와 deep import가 없다.
-- 핵심 폼 흐름이 RTL 테스트로 검증된다.
 - `pnpm lint`가 통과한다.
 - `pnpm test`가 통과한다.
 - `pnpm typecheck`가 통과한다.
 - `pnpm build`가 통과한다.
-- `WORK_LOG.md`에 Unit 3 결과가 기록된다.
+- `WORK_LOG.md`에 Unit 4 결과가 기록된다.
+- `REVIEW_LOG.md`에 Unit 4 자체 리뷰 결과가 기록된다.
 - `SESSION_STATE.md`가 최신 상태로 갱신된다.
 
-## 7. Claude Code 지시 프롬프트
+## 7. 구현 지시
 
 ```text
-너는 이 repo의 구현 담당 Claude Code다. Unit 3 릴리즈 항목 폼과 GitLab mock import 흐름을 구현해라.
-
-작업 전 반드시 다음 문서를 읽어라.
-- AGENTS.md
-- PRD.mdc
-- docs/README.md
-- docs/PROJECT_GUIDE.md
-- docs/CURRENT_TASK.md
-- docs/WORK_LOG.md
-- docs/REVIEW_LOG.md
-- docs/SESSION_STATE.md
-- .rules/project-rules_architecture.mdc
-- .rules/project-rules_working.mdc
-- .rules/project-rules_naming.mdc
-- .rules/project-rules_testing-policy.mdc
+Unit 4 문서 미리보기 고도화 작업을 수행한다.
 
 목표:
-릴리즈 상세 화면에서 GitLab mock issue/MR 데이터를 바탕으로 릴리즈 항목을 생성하고, 생성된 항목이 현재 릴리즈 상세 문서 탭에 즉시 반영되게 한다.
+같은 릴리즈 원본 데이터에서 생성되는 CHANGELOG, QC Checklist, Release Note, Announcement 미리보기의 정보 구조와 읽기 품질을 개선한다.
 
 범위:
-- React Hook Form + Zod 기반 릴리즈 항목 생성 폼을 구현한다.
-- 필요한 의존성(`react-hook-form`, `zod`, `@hookform/resolvers`)이 없으면 pnpm으로 추가한다.
-- GitLab Issue/MR mock 선택 또는 URL 입력으로 기본 정보를 채운다.
-- 필수 필드 검증과 검증 메시지를 구현한다.
-- 정상 제출 시 현재 릴리즈의 items 상태에 새 `ReleaseItem`을 추가한다.
-- 생성된 항목은 Overview, CHANGELOG, QC Checklist, Release Note, Announcement 탭에 반영되어야 한다.
-- Unit 2 Warning 중 릴리즈 목록 `<tr onClick>` 접근성 문제를 함께 보완한다.
-- 핵심 폼 흐름 RTL 테스트를 작성한다.
+- CHANGELOG, QC Checklist, Release Note, Announcement 탭 표시를 고도화한다.
+- Unit 3에서 추가한 릴리즈 항목도 모든 문서 미리보기에 일관되게 반영되게 한다.
+- TEST_STATUS_LABEL을 entities/release constants로 중앙화한다.
+- 핵심 문서 미리보기 흐름 테스트를 보강한다.
 
 제외:
-- 실제 API 연동
-- TanStack Query/MSW 연동
-- 백엔드 저장
-- 릴리즈 항목 삭제
 - QC 상태 변경
-- 이미지 업로드
 - export/clipboard 구현
-- 복잡한 전역 modal/store 도입
+- 실제 API 연동
+- Google Drive 백업
 
 검증:
 - pnpm lint
@@ -213,20 +150,8 @@ pnpm build
 - pnpm build
 
 완료 후:
-- docs/WORK_LOG.md에 작업 결과를 기록해라.
-- docs/SESSION_STATE.md를 최신 상태로 갱신해라.
-- 커밋은 하지 마라.
+- docs/WORK_LOG.md에 작업 결과를 기록한다.
+- docs/REVIEW_LOG.md에 자체 리뷰 결과를 기록한다.
+- docs/SESSION_STATE.md를 최신 상태로 갱신한다.
+- 커밋은 하지 않는다.
 ```
-
-## 8. 완료 보고 형식
-
-작업 완료 후 `WORK_LOG.md`에 아래 항목을 기록한다.
-
-- 작업 일자
-- 작업 단위명
-- 작업 브랜치
-- 변경 파일
-- 구현 내용
-- 검증 결과
-- 남은 리스크
-- 리뷰 요청 포인트
