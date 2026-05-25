@@ -1,10 +1,10 @@
-# Current Task — Unit 1 도메인 모델과 mock 데이터
+# Current Task — Unit 2 앱 레이아웃과 릴리즈 목록/상세 기본 화면
 
 ## 0. 작업 요약
 
-ReleaseHub의 릴리즈 원본 데이터를 표현하는 타입, 상수, mock 데이터, 문서 생성 순수 함수를 구성한다.
+ReleaseHub의 첫 화면으로 사용할 SPA 기본 구조를 만든다.
 
-Unit 0에서 Vite + React + TypeScript + pnpm 기반 개발 환경이 준비되었으므로, 이번 작업에서는 UI 구현 없이 도메인 모델과 데이터 생성 로직만 작성한다.
+Unit 1에서 정의한 release 도메인 타입, mock 데이터, 문서 생성 순수 함수를 화면에서 소비하여 릴리즈 목록과 릴리즈 상세 기본 화면을 구성한다. 이번 작업은 화면 뼈대와 정보 구조 확인이 목적이며, 실제 API 연동이나 릴리즈 항목 등록 폼은 구현하지 않는다.
 
 ## 1. 반드시 읽을 문서
 
@@ -12,6 +12,7 @@ Unit 0에서 Vite + React + TypeScript + pnpm 기반 개발 환경이 준비되�
 - `PRD.mdc`
 - `docs/README.md`
 - `docs/PROJECT_GUIDE.md`
+- `docs/CURRENT_TASK.md`
 - `docs/WORK_LOG.md`
 - `docs/REVIEW_LOG.md`
 - `docs/SESSION_STATE.md`
@@ -24,43 +25,58 @@ Unit 0에서 Vite + React + TypeScript + pnpm 기반 개발 환경이 준비되�
 
 ### 포함
 
-- Release, ReleaseItem, QCTestCase 타입 정의
-- ReleaseStatus, ChangeCategory, TestStatus 상수/타입 정의
-- mock GitLab issue/MR 데이터 작성
-- mock release/releaseItem/testCase 데이터 작성
-- 릴리즈 문서 생성 순수 함수 작성
-  - CHANGELOG 그룹핑
-  - QC 테스트 케이스 목록 생성
-  - Release Note 공개 항목 생성
-  - Announcement 텍스트 생성
-- 순수 함수 테스트 작성
-- `WORK_LOG.md`, `SESSION_STATE.md` 갱신
+- 앱 레이아웃 구성
+- 릴리즈 목록 화면 구성
+  - 버전
+  - 상태
+  - 포함 이슈 수
+  - QC 진행률
+- 릴리즈 상세 화면 구성
+  - Overview
+  - CHANGELOG
+  - QC Checklist
+  - Release Note
+  - Announcement 탭
+- Unit 1의 `entities/release` public API 기반 mock 데이터 연결
+- Unit 1의 문서 생성 순수 함수 결과를 상세 탭에 표시
+- 기본 반응형 레이아웃 적용
+- 핵심 화면 동작을 확인하는 최소 RTL 테스트 작성
 
 ### 제외
 
-- 실제 API fetcher 구현
-- TanStack Query hook 구현
-- 화면 UI 구현
-- 릴리즈 항목 등록 폼 구현
-- export 다운로드 구현
+- 릴리즈 항목 등록/수정 폼
+- GitLab Issue/MR URL 입력 또는 import UX
+- QC 상태 변경
+- 실패 사유 입력
+- CSV/HTML/JSON export
+- clipboard 복사 기능
+- TanStack Query/MSW 연동
 - 실제 GitLab/Google Drive API 연동
+- 새 라우팅 라이브러리 도입
 - 커밋
 
 ## 3. 예상 변경 파일
 
 ### 신규 후보
 
-- `src/entities/release/model/types.ts`
-- `src/entities/release/model/constants.ts`
-- `src/entities/release/model/mock-gitlab.ts`
-- `src/entities/release/model/mock-release.ts`
-- `src/entities/release/model/generate-release-documents.ts`
-- `src/entities/release/model/generate-release-documents.test.ts`
-- `src/entities/release/index.ts`
+- `src/pages/release-list/index.ts`
+- `src/pages/release-list/ui/ReleaseListPage.tsx`
+- `src/pages/release-detail/index.ts`
+- `src/pages/release-detail/ui/ReleaseDetailPage.tsx`
+- `src/widgets/release-list/index.ts`
+- `src/widgets/release-list/ui/ReleaseListPanel.tsx`
+- `src/widgets/release-detail/index.ts`
+- `src/widgets/release-detail/ui/ReleaseDetailPanel.tsx`
+- `src/widgets/release-document-tabs/index.ts`
+- `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx`
+- 필요한 경우 `src/shared/lib/` 또는 `src/shared/ui/` 하위의 작은 공통 유틸/표시 컴포넌트
 
 ### 수정 후보
 
-- `src/entities/index.ts`
+- `src/app/App.tsx`
+- `src/app/App.test.tsx`
+- `src/pages/index.ts`
+- `src/widgets/index.ts`
 - `docs/WORK_LOG.md`
 - `docs/SESSION_STATE.md`
 
@@ -68,13 +84,20 @@ Unit 0에서 Vite + React + TypeScript + pnpm 기반 개발 환경이 준비되�
 
 - 패키지 매니저는 `pnpm`을 사용한다.
 - FSD 레이어 규칙을 지킨다.
-- 릴리즈 도메인은 `entities/release` 슬라이스에서 소유한다.
-- UI와 무관한 도메인 타입/상수/순수 함수만 구현한다.
-- 매직 스트링은 상수 또는 config 객체로 관리한다.
+- `app`은 페이지 조합과 최소 라우팅만 담당한다.
+- `pages`는 화면 단위 조합을 담당한다.
+- `widgets`는 릴리즈 목록/상세/문서 탭 UI 블록을 담당한다.
+- `widgets`와 `pages`는 `entities/release` 내부 파일을 deep import하지 말고 public API인 `@entities/release` 또는 `@entities`를 통해 import한다.
+- `entities` 내부 구현 파일을 Unit 2에서 임의 리팩터링하지 않는다.
+- 라우팅은 새 라이브러리를 추가하지 않고 hash 또는 URLSearchParams 기반의 최소 구현으로 처리한다.
+- 상세 탭 상태는 가능하면 URL에 남겨 새로고침 후에도 복구되게 한다. 구현 부담이 과하면 local state로 시작하고 `WORK_LOG.md`에 후속 리스크로 남긴다.
+- React 19 기준으로 불필요한 `import React`를 작성하지 않는다.
+- `useMemo`, `useCallback`, `React.memo`는 사용하지 않는다.
 - `any`를 사용하지 않는다.
-- exported 함수에는 JSDoc을 작성한다.
-- 테스트는 co-location으로 작성한다.
-- 범위 밖 리팩터링과 전체 포맷 변경은 하지 않는다.
+- 하드코딩된 표시 문자열이 반복되면 상수로 분리한다.
+- Tailwind CSS를 사용하고 다른 스타일링 방식을 혼합하지 않는다.
+- 업무 도구형 화면으로 구성한다. 과도한 랜딩 페이지, 큰 hero 섹션, 장식 위주의 카드 레이아웃은 피한다.
+- UI 테스트는 사용자 관점의 텍스트/role 기반으로 작성하고, 스타일/CSS 클래스/스냅샷은 테스트하지 않는다.
 
 ## 5. 테스트 및 검증
 
@@ -96,21 +119,23 @@ pnpm build
 
 ## 6. 완료 기준
 
-- 릴리즈 도메인 타입과 상태/분류 상수가 SSOT로 정의되어 있다.
-- mock GitLab 데이터와 mock release 데이터가 분리되어 있다.
-- 같은 release 원본 데이터에서 CHANGELOG, QC Checklist, Release Note, Announcement 데이터가 생성된다.
-- 순수 함수 테스트가 통과한다.
+- 릴리즈 목록 화면에서 버전, 상태, 이슈 수, QC 진행률을 볼 수 있다.
+- 릴리즈 상세 화면에서 선택된 릴리즈의 기본 정보와 포함 항목을 볼 수 있다.
+- 릴리즈 상세 화면에 Overview, CHANGELOG, QC Checklist, Release Note, Announcement 탭이 있다.
+- CHANGELOG, QC Checklist, Release Note, Announcement 탭은 Unit 1 순수 함수 결과를 사용한다.
+- FSD 레이어 역참조와 deep import가 없다.
+- 핵심 화면 렌더링 또는 탭 전환 흐름이 RTL 테스트로 검증된다.
 - `pnpm lint`가 통과한다.
 - `pnpm test`가 통과한다.
 - `pnpm typecheck`가 통과한다.
 - `pnpm build`가 통과한다.
-- `WORK_LOG.md`에 Unit 1 결과가 기록된다.
+- `WORK_LOG.md`에 Unit 2 결과가 기록된다.
 - `SESSION_STATE.md`가 최신 상태로 갱신된다.
 
 ## 7. Claude Code 지시 프롬프트
 
 ```text
-너는 이 repo의 구현 담당 Claude Code다. Unit 1 도메인 모델과 mock 데이터 작업을 수행해라.
+너는 이 repo의 구현 담당 Claude Code다. Unit 2 앱 레이아웃과 릴리즈 목록/상세 기본 화면을 구현해라.
 
 작업 전 반드시 다음 문서를 읽어라.
 - AGENTS.md
@@ -127,17 +152,23 @@ pnpm build
 - .rules/project-rules_testing-policy.mdc
 
 목표:
-ReleaseHub의 릴리즈 원본 데이터를 표현하는 타입, 상수, mock 데이터, 문서 생성 순수 함수를 작성해라.
+ReleaseHub의 주요 정보 구조를 확인할 수 있는 SPA 화면 뼈대를 만든다.
 
 범위:
-- Release, ReleaseItem, QCTestCase 모델을 정의한다.
-- ReleaseStatus, ChangeCategory, TestStatus는 SSOT로 관리한다.
-- mock GitLab issue/MR 데이터와 mock release 데이터를 분리한다.
-- CHANGELOG, QC Checklist, Release Note, Announcement 생성 순수 함수를 작성한다.
-- 순수 함수 테스트를 co-location으로 작성한다.
+- 앱 레이아웃과 릴리즈 목록/상세 기본 화면을 구성한다.
+- 릴리즈 목록에서 버전, 상태, 이슈 수, QC 진행률을 표시한다.
+- 릴리즈 상세 화면에 Overview, CHANGELOG, QC Checklist, Release Note, Announcement 탭을 구성한다.
+- Unit 1의 entities/release public API, mock release 데이터, 문서 생성 순수 함수를 사용한다.
+- 핵심 화면 렌더링 또는 탭 전환 흐름을 테스트한다.
 
 제외:
-- UI 구현, 폼 구현, API 연동, TanStack Query hook 구현은 하지 마라.
+- 릴리즈 항목 등록/수정 폼 구현
+- GitLab import UX 구현
+- QC 상태 변경
+- export/clipboard 구현
+- 실제 API 연동
+- TanStack Query/MSW 연동
+- 새 라우팅 라이브러리 도입
 
 검증:
 - pnpm lint

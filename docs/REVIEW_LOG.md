@@ -11,6 +11,73 @@
 
 ---
 
+## 2026-05-25 / Unit 1 — 릴리즈 도메인 모델과 mock 데이터
+
+### 최종 판단
+
+- PASS WITH WARNINGS
+
+### Critical
+
+- 없음
+
+### Warning
+
+1. `src/entities/index.ts`에서 layer-level barrel이 `export * from './release'`를 사용한다.
+   - `src/entities/release/index.ts`는 명시적 public API를 제공하므로 현재 캡슐화 위반은 아니다.
+   - 다만 슬라이스가 늘어나면 노출 범위 추적이 흐려질 수 있으므로, Unit 2 이후 entities layer barrel의 명시적 re-export 기준을 정하는 것을 권장한다.
+
+2. `generateAnnouncement` 테스트가 MAJOR 섹션 텍스트와 config 동작은 검증하지만, MINOR 섹션의 텍스트 포맷은 직접 검증하지 않는다.
+   - `minorItems` 데이터 분류는 검증되어 있어 현재 기능 완료를 막지는 않는다.
+   - 공지문 포맷 회귀 방어를 위해 Unit 2 또는 Unit 4에서 MINOR 텍스트 케이스를 보강하는 것을 권장한다.
+
+3. `TEST_STATUS`는 상수/타입 SSOT로 정의되어 있으나, 표시용 `TEST_STATUS_LABEL`은 아직 없다.
+   - Unit 1 필수 범위에는 상태 상수/타입 정의가 포함되므로 Critical은 아니다.
+   - Unit 2/Unit 5에서 QC 상태 배지를 표시할 때 `CHANGE_CATEGORY_LABEL`, `RELEASE_STATUS_LABEL`과 같은 패턴으로 추가하는 것이 좋다.
+
+### 검증 결과
+
+현재 repo 루트에서 재실행:
+
+```bash
+pnpm lint
+```
+
+- 결과: PASS
+
+```bash
+pnpm test
+```
+
+- 결과: PASS
+- 상세: `src/entities/release/model/generateReleaseDocuments.test.ts` 22개 + `src/app/App.test.tsx` 1개, 총 23개 테스트 통과
+
+```bash
+pnpm typecheck
+```
+
+- 결과: PASS
+
+```bash
+pnpm build
+```
+
+- 결과: PASS
+- 상세: `tsc -b && vite build`, 29 modules transformed
+
+### 보완 요청
+
+- Critical 없음. Unit 1 보완 작업은 필요 없다.
+- Unit 2 진행 가능.
+
+### 후속 권장 사항
+
+- Unit 2에서는 새 라우팅 라이브러리 추가 없이 현재 의존성 범위에서 최소 라우팅을 구현할지 먼저 결정한다.
+- 릴리즈 상세 탭 상태는 공유 가능한 URL 상태(hash/searchParams)로 둘지, Unit 2에서는 local state로 시작할지 결정한다.
+- QC 상태 표시가 들어가는 시점에 `TEST_STATUS_LABEL` 추가 여부를 확정한다.
+
+---
+
 ## 2026-05-25 / Unit 0 3차 검증 — repo 루트 pnpm 재검증
 
 ### 최종 판단

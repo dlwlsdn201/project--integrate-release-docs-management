@@ -12,8 +12,8 @@
 | Unit | 상태 | 담당 | 리뷰 상태 | 비고 |
 | --- | --- | --- | --- | --- |
 | Unit 0 | Done | Claude Code | PASS WITH WARNINGS | repo 루트 pnpm 검증 통과 |
-| Unit 1 | Ready | Claude Code | 구현 전 | 도메인 모델/mock/순수 함수 |
-| Unit 2 | Draft | Claude Code | 구현 전 | 목록/상세 기본 화면 |
+| Unit 1 | Done | Claude Code | PASS WITH WARNINGS | 도메인 모델/mock/순수 함수 |
+| Unit 2 | Ready | Claude Code | 구현 전 | 목록/상세 기본 화면 |
 | Unit 3 | Draft | Claude Code | 구현 전 | 릴리즈 항목 폼 |
 | Unit 4 | Draft | Claude Code | 구현 전 | 문서 미리보기 |
 | Unit 5 | Draft | Claude Code | 구현 전 | QC 상태 UX |
@@ -22,6 +22,74 @@
 | Unit 8 | Draft | Claude Code | 구현 전 | 테스트/문서 정리 |
 
 ## 2. 단위 작업 결과
+
+---
+
+## 2026-05-25 / Unit 1 — 릴리즈 도메인 모델과 mock 데이터
+
+### 작업 브랜치
+
+- `main` (커밋 없음)
+
+### 변경 파일
+
+| 파일 | 변경 유형 | 내용 |
+| --- | --- | --- |
+| `src/entities/release/model/constants.ts` | 신규 | ReleaseStatus, ChangeCategory, TestStatus SSOT 상수/타입, 표시 레이블, CHANGELOG 카테고리 순서 |
+| `src/entities/release/model/types.ts` | 신규 | Release, ReleaseItem, QCTestCase 도메인 인터페이스 |
+| `src/entities/release/model/mockGitlab.ts` | 신규 | GitlabIssue, GitlabMergeRequest 인터페이스 및 mock 데이터 5개 이슈, 2개 MR |
+| `src/entities/release/model/mockRelease.ts` | 신규 | v1.8.0(RELEASED), v1.9.0(QC_READY) mock 릴리즈 및 항목 데이터, getMockReleaseItems 유틸 |
+| `src/entities/release/model/generateReleaseDocuments.ts` | 신규 | generateChangelog, generateQcChecklist, generateReleaseNote, generateAnnouncement 순수 함수 |
+| `src/entities/release/model/generateReleaseDocuments.test.ts` | 신규 | 4개 함수 22개 단위 테스트 (co-location) |
+| `src/entities/release/index.ts` | 신규 | release 슬라이스 public API barrel |
+| `src/entities/index.ts` | 수정 | release 슬라이스 re-export 추가 |
+| `docs/WORK_LOG.md` | 수정 | Unit 1 결과 기록 |
+| `docs/SESSION_STATE.md` | 수정 | 현재 상태 갱신 |
+
+### 구현 내용
+
+- **상수/타입 SSOT** (`constants.ts`): `RELEASE_STATUS`, `CHANGE_CATEGORY`, `TEST_STATUS` const 객체와 derived union type, 표시 레이블 Record, `CHANGELOG_CATEGORY_ORDER` 순서 배열
+- **도메인 모델** (`types.ts`): `QCTestCase`, `ReleaseItem`, `Release` interface — `any` 없음, constants에서 타입 import
+- **mock GitLab 데이터** (`mockGitlab.ts`): GitLab API 구조를 camelCase로 반영한 인터페이스(`GitlabIssue`, `GitlabMergeRequest`, `GitlabUser`, `GitlabMilestone`), 5개 이슈/2개 MR mock 데이터
+- **mock 릴리즈 데이터** (`mockRelease.ts`): v1.8.0(4개 항목, MAJOR/MINOR 혼합, isPublic 분기 포함), v1.9.0(1개 BUGFIX 항목), QCTestCase 포함, `getMockReleaseItems` 유틸 함수
+- **문서 생성 순수 함수** (`generateReleaseDocuments.ts`):
+  - `generateChangelog`: 변경 유형별 그룹화, `CHANGELOG_CATEGORY_ORDER` 순서 보장, 빈 그룹 제외
+  - `generateQcChecklist`: 테스트 케이스 있는 항목만 반환
+  - `generateReleaseNote`: `isPublic: true` 항목만 포함, categoryLabel 포함
+  - `generateAnnouncement`: MAJOR/MINOR 항목 추출, 포맷된 텍스트 생성, `AnnouncementConfig` 옵션(releaseNoteUrl, contactChannel)
+- **FSD public API**: `src/entities/release/index.ts`에서 필요한 타입/상수/함수/mock 데이터만 명시적 export
+- **매직 스트링**: `ANNOUNCEMENT_TEXT_CONFIG` const 객체로 관리
+- **JSDoc**: 4개 exported 순수 함수 전체에 작성
+
+### 테스트 및 검증
+
+```bash
+pnpm lint      # ✅ PASS (EXIT 0, 신규 오류 없음)
+pnpm test      # ✅ PASS (23/23: 신규 22개 + 기존 1개)
+pnpm typecheck # ✅ PASS (EXIT 0)
+pnpm build     # ✅ PASS (tsc -b + vite build, 29 modules)
+```
+
+| 명령 | 결과 | 비고 |
+| --- | --- | --- |
+| `pnpm lint` | ✅ PASS | 신규 파일 포함 0 warnings |
+| `pnpm test` | ✅ PASS (23/23) | 신규 22개 + 기존 App smoke test 1개 |
+| `pnpm typecheck` | ✅ PASS | strict mode, no `any` |
+| `pnpm build` | ✅ PASS | 29 modules (도메인 모델 추가 후에도 모듈 수 동일 — 빌드 entry에서 미참조) |
+
+기존 실패 없음. 신규 실패 없음.
+
+### 남은 리스크
+
+1. **build 모듈 수 미증가**: 릴리즈 도메인 파일들이 `src/main.tsx` → `App.tsx` 트리에서 import되지 않아 빌드 번들에 포함되지 않는다. Unit 2에서 UI 연결 시 정상 반영될 예정.
+2. **test 파일 typecheck 미포함**: `tsconfig.app.json`에서 test 파일 exclude 유지 중. Unit 1 테스트는 vitest가 자체 컴파일하므로 런타임 타입 안전. 전략 변경은 Unit 8에서 검토.
+3. **mock GitLab 데이터 — avatarUrl 빈 문자열**: 이미지 URL이 빈 문자열이다. Unit 3 폼 구현 시 placeholder 처리 필요.
+
+### 리뷰 요청 포인트
+
+1. `generateAnnouncement`의 기본 `contactChannel` 값 `#개발팀`이 실제 사내 채널명과 일치하는지 확인 권장
+2. `ChangelogItem.summary`가 `changelogSummary`를 그대로 사용하는데, CHANGELOG와 announcement에서 같은 필드를 공유하는 설계의 적합성 검토 권장
+3. `src/entities/index.ts`에서 `export * from './release'`로 전체 re-export — 추후 슬라이스가 늘어나면 명시적 re-export로 전환 고려
 
 ---
 
