@@ -1,34 +1,72 @@
-# project--integrate-release-docs-management
+# ReleaseHub
 
-GitLab 기반 개발 흐름에서 발생하는 릴리즈 정보를 하나의 원본 데이터로 관리하고, 릴리즈 관련 산출물을 자동 생성하는 통합형 관리 솔루션 프로젝트입니다.
+GitLab 기반 릴리즈 정보를 하나의 원본 데이터로 관리하고, CHANGELOG, QC Checklist, Release Note, Announcement를 자동 생성하는 SPA 프로토타입입니다.
 
-## 서비스 개요
+## 실행 방법
 
-ReleaseHub는 사내 릴리즈 과정에서 반복 작성되는 `CHANGELOG`, `QC 테스트 케이스`, `릴리즈 노트`를 하나의 입력 흐름으로 통합하는 SPA 프로토타입입니다.
+```bash
+pnpm install
+pnpm dev
+```
 
-기존에는 하나의 이슈 또는 신규 기능 작업이 완료될 때마다 여러 문서를 각각 수기로 작성해야 했습니다. 이 프로젝트는 GitLab 이슈/MR 정보를 기반으로 릴리즈 항목을 등록하고, 대상자와 목적에 맞는 문서 뷰를 자동 생성하는 것을 목표로 합니다.
+검증 명령:
 
-## 주요 대상 문서
+```bash
+pnpm lint
+pnpm test
+pnpm typecheck
+pnpm build
+```
 
-| 문서 | 주 사용 대상 | 역할 |
-| --- | --- | --- |
-| CHANGELOG | 모든 사용자 | 릴리즈 배포 완료 후 전사 공지에 첨부하는 버전별 주요 변경사항 요약 |
-| QC 테스트 케이스 | 개발자, 테스터 | 릴리즈 전 QC 기간에 검증해야 할 테스트 체크리스트 |
-| 릴리즈 노트 | 모든 사용자 | 실제 사용자가 업데이트 상세 변경사항을 확인하는 문서 |
+## 구현 범위
 
-## 핵심 기능 초안
+- 릴리즈 목록/상세 화면
+- hash 기반 목록/상세 라우팅
+- GitLab mock Issue/MR 기반 릴리즈 항목 생성 폼
+- React Hook Form + Zod 필수값 검증
+- 릴리즈 항목 추가 시 문서 탭 즉시 반영
+- CHANGELOG, QC Checklist, Release Note, Announcement 미리보기
+- QC 테스트 케이스 상태 변경
+- Failed/Blocked 사유 입력
+- Announcement clipboard 복사
+- CHANGELOG CSV, QC CSV, Release Note HTML, Release JSON export
+- 주요 흐름 RTL 테스트
 
-- GitLab 이슈/MR 기반 릴리즈 항목 초안 생성
-- 릴리즈 버전별 변경사항 관리
-- CHANGELOG 자동 미리보기
-- QC 테스트 케이스 체크리스트 관리
-- 릴리즈 노트 미리보기
-- 전사 메신저 공지문 생성
-- CSV/HTML export
-- 추후 Google Drive 백업 연동
+## 제외 범위
 
-## 프로젝트 방향
+- 실제 GitLab OAuth/API 연동
+- 실제 Google Drive API 연동
+- 사내 메신저 자동 발송
+- 백엔드 저장
+- 인증/권한 관리
+- 실시간 협업 편집
 
-초기 프로토타입은 실제 GitLab OAuth, Google Drive API, 사내 메신저 자동 발송까지 포함하지 않습니다. 우선 mock 데이터와 로컬 상태를 기반으로 핵심 사용자 흐름을 구현하고, 구현 완료 후 README를 실제 기능과 실행 방법 중심으로 보완할 예정입니다.
+## 기술 스택
 
-상세 기획은 [PRD.mdc](./PRD.mdc)를 참고합니다.
+- React 19
+- TypeScript
+- Vite
+- Vitest + Testing Library
+- Tailwind CSS
+- React Hook Form
+- Zod
+
+## 테스트 현황
+
+현재 주요 테스트 파일:
+
+- `src/entities/release/model/generateReleaseDocuments.test.ts`
+- `src/entities/release/model/exportReleaseDocuments.test.ts`
+- `src/features/release-item-form/ui/ReleaseItemForm.test.tsx`
+- `src/widgets/release-list/ui/ReleaseListPanel.test.tsx`
+- `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx`
+- `src/pages/release-list/ui/ReleaseListPage.test.tsx`
+- `src/pages/release-detail/ui/ReleaseDetailPage.test.tsx`
+- `src/app/App.test.tsx`
+
+## 문서
+
+- 제품 요구사항: [PRD.mdc](./PRD.mdc)
+- 프로젝트 작업 기준: [docs/PROJECT_GUIDE.md](./docs/PROJECT_GUIDE.md)
+- 작업 로그: [docs/WORK_LOG.md](./docs/WORK_LOG.md)
+- 리뷰 로그: [docs/REVIEW_LOG.md](./docs/REVIEW_LOG.md)

@@ -16,12 +16,228 @@
 | Unit 2 | Done | Claude Code | PASS WITH WARNINGS | 목록/상세 기본 화면 |
 | Unit 3 | Done | Claude Code/Codex | PASS | 릴리즈 항목 폼, 리뷰 Warning 보완 완료 |
 | Unit 4 | Done | Codex | PASS | 문서 미리보기 고도화 |
-| Unit 5 | Draft | Codex | 구현 전 | QC 상태 UX |
-| Unit 6 | Draft | Codex | 구현 전 | Export/복사 |
-| Unit 7 | Draft | Codex | 구현 전 | UI Polish |
-| Unit 8 | Draft | Codex | 구현 전 | 테스트/문서 정리 |
+| Unit 5 | Done | Codex | PASS | QC 상태 UX |
+| Unit 6 | Done | Codex | PASS | Export/복사 |
+| Unit 7 | Done | Codex | PASS | UI Polish |
+| Unit 8 | Done | Codex | PASS | 테스트/문서 정리 |
 
 ## 2. 단위 작업 결과
+
+---
+
+## 2026-05-26 / Unit 8 — 테스트/문서 정리
+
+### 작업 브랜치
+
+- `main` (커밋 없음)
+
+### 변경 파일
+
+| 파일 | 변경 유형 | 내용 |
+| --- | --- | --- |
+| `README.md` | 수정 | 실행 방법, 구현/제외 범위, 테스트 현황 갱신 |
+| `docs/CURRENT_TASK.md` | 수정 | Unit 8 작업 범위와 완료 기준으로 갱신 |
+| `docs/NEXT_TASK_DRAFT.md` | 수정 | Unit 8 이후 후보 작업 정리 |
+| `docs/WORK_LOG.md` | 수정 | Unit 8 결과 기록 |
+| `docs/REVIEW_LOG.md` | 수정 | Unit 8 자체 리뷰 결과 기록 |
+| `docs/SESSION_STATE.md` | 수정 | 최종 상태 갱신 |
+
+### 정리 내용
+
+- README를 현재 구현된 기능과 실행/검증 명령 중심으로 갱신.
+- 테스트 파일 목록과 프로젝트 문서 링크를 README에 추가.
+- NEXT_TASK_DRAFT를 Unit 8 이후 후보 작업으로 정리.
+- 최종 검증과 검색 결과를 문서에 반영.
+
+### 테스트 및 검증
+
+```bash
+pnpm lint      # PASS
+pnpm test      # PASS (52/52)
+pnpm typecheck # PASS
+pnpm build     # PASS (137 modules)
+```
+
+추가 확인:
+
+- `git diff --check`: PASS
+- FSD/deep import 검색: 위반 없음
+- `any`, `TODO`, `FIXME` 코드 검색: 위반 없음
+
+### 자체 리뷰 결과
+
+- 최종 판단: PASS
+- Critical: 없음
+- Warning: 없음
+
+---
+
+## 2026-05-26 / Unit 7 — UI Polish
+
+### 작업 브랜치
+
+- `main` (커밋 없음)
+
+### 변경 파일
+
+| 파일 | 변경 유형 | 내용 |
+| --- | --- | --- |
+| `docs/CURRENT_TASK.md` | 수정 | Unit 7 작업 범위와 완료 기준으로 갱신 |
+| `src/widgets/release-list/ui/ReleaseListPanel.tsx` | 수정 | 빈 상태 role, 표 accessible name, 모바일 overflow 보완 |
+| `src/widgets/release-list/ui/ReleaseListPanel.test.tsx` | 신규 | 목록 표 접근성/빈 상태 테스트 |
+| `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx` | 수정 | tab/tabpanel 접근성 연결, 표 overflow 보완 |
+| `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx` | 수정 | tabpanel 접근성 테스트 보강 |
+| `docs/WORK_LOG.md` | 수정 | Unit 7 결과 기록 |
+| `docs/REVIEW_LOG.md` | 수정 | Unit 7 자체 리뷰 결과 기록 |
+| `docs/SESSION_STATE.md` | 수정 | 현재 상태 갱신 |
+| `docs/NEXT_TASK_DRAFT.md` | 수정 | Unit 8 초안으로 갱신 |
+
+### 구현 내용
+
+- 릴리즈 목록 빈 상태를 `role="status"`로 노출.
+- 릴리즈 목록 테이블에 `aria-label="릴리즈 목록 테이블"` 추가.
+- 릴리즈 목록과 문서 탭 내부 표에 모바일 가로 스크롤과 최소 너비 적용.
+- 문서 탭 버튼에 `id`, `aria-controls`를 추가하고 본문을 `tabpanel`로 연결.
+- 접근성 중심 RTL 테스트 추가/보강.
+
+### 테스트 및 검증
+
+```bash
+pnpm lint      # ✅ PASS
+pnpm test      # ✅ PASS (52/52)
+pnpm typecheck # ✅ PASS
+pnpm build     # ✅ PASS (137 modules)
+```
+
+### 자체 리뷰 결과
+
+- 최종 판단: PASS
+- Critical: 없음
+- Warning: 없음
+
+### 남은 리스크
+
+- Browser 자동화 도구가 노출되지 않아 실제 viewport 스크린샷 검증은 수행하지 못했다. jsdom 기반 접근성/구조 테스트와 build 검증으로 대체했다.
+
+---
+
+## 2026-05-26 / Unit 6 — Export와 공지문 복사
+
+### 작업 브랜치
+
+- `main` (커밋 없음)
+
+### 변경 파일
+
+| 파일 | 변경 유형 | 내용 |
+| --- | --- | --- |
+| `docs/CURRENT_TASK.md` | 수정 | Unit 6 작업 범위와 완료 기준으로 갱신 |
+| `src/entities/release/model/exportReleaseDocuments.ts` | 신규 | CHANGELOG CSV, QC CSV, Release Note HTML, Release JSON 생성 함수 |
+| `src/entities/release/model/exportReleaseDocuments.test.ts` | 신규 | export 문자열 생성 테스트 4개 |
+| `src/entities/release/index.ts` | 수정 | export 함수 public API export |
+| `src/features/release-export/ui/ReleaseExportActions.tsx` | 신규 | 공지문 복사 및 export 버튼 UI |
+| `src/features/release-export/index.ts` | 신규 | release-export feature public API |
+| `src/features/index.ts` | 수정 | release-export re-export |
+| `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx` | 수정 | export action toolbar 연결 |
+| `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx` | 수정 | 공지문 clipboard 복사 테스트 추가 |
+| `docs/WORK_LOG.md` | 수정 | Unit 6 결과 기록 |
+| `docs/REVIEW_LOG.md` | 수정 | Unit 6 자체 리뷰 결과 기록 |
+| `docs/SESSION_STATE.md` | 수정 | 현재 상태 갱신 |
+| `docs/NEXT_TASK_DRAFT.md` | 수정 | Unit 7 초안으로 갱신 |
+
+### 구현 내용
+
+- **공지문 복사**: 문서 탭 상단에 `공지문 복사` 버튼 추가. `navigator.clipboard.writeText` 성공/실패 메시지 표시.
+- **CSV/HTML/JSON export**: CHANGELOG CSV, QC Checklist CSV, Release Note HTML, Release JSON 생성 함수 추가.
+- **다운로드 UI**: 문서 탭 상단에 `CHANGELOG CSV`, `QC CSV`, `Release Note HTML`, `릴리즈 JSON` 버튼 추가.
+- **QC 사유 반영**: QC CSV에 실패/차단 사유 컬럼 포함.
+- **TDD 적용**: export 순수 함수 테스트와 clipboard 복사 테스트를 RED로 확인한 뒤 구현.
+
+### 테스트 및 검증
+
+```bash
+pnpm lint      # ✅ PASS
+pnpm test      # ✅ PASS (50/50)
+pnpm typecheck # ✅ PASS
+pnpm build     # ✅ PASS (137 modules)
+```
+
+### 자체 리뷰 결과
+
+- 최종 판단: PASS
+- Critical: 없음
+- Warning: 없음
+
+### 남은 리스크
+
+1. **다운로드 버튼 단위 테스트 제한**: Blob 다운로드 클릭 자체는 브라우저 API 의존성이 커서 순수 문자열 생성 테스트 중심으로 방어했다.
+2. **clipboard fallback 없음**: clipboard API 실패 시 메시지는 표시하지만 대체 복사 방식은 제공하지 않는다.
+
+### 후속 권장 사항
+
+- Unit 7에서 export toolbar의 모바일 줄바꿈과 버튼 밀도를 시각적으로 정리한다.
+
+---
+
+## 2026-05-26 / Unit 5 — QC 체크리스트 상태 UX
+
+### 작업 브랜치
+
+- `main` (커밋 없음)
+
+### 변경 파일
+
+| 파일 | 변경 유형 | 내용 |
+| --- | --- | --- |
+| `docs/CURRENT_TASK.md` | 수정 | Unit 5 작업 범위와 완료 기준으로 갱신 |
+| `src/entities/release/model/qcStatus.ts` | 신규 | QC 진행률 계산 및 테스트 케이스 업데이트 순수 helper |
+| `src/entities/release/index.ts` | 수정 | QC helper public API export |
+| `src/features/qc-test-status/ui/QCTestStatusControl.tsx` | 신규 | 테스트 케이스 상태 변경 및 실패/차단 사유 입력 UI |
+| `src/features/qc-test-status/index.ts` | 신규 | qc-test-status feature public API |
+| `src/features/index.ts` | 수정 | qc-test-status re-export |
+| `src/widgets/release-list/ui/ReleaseListPanel.tsx` | 수정 | `getReleaseQcProgress` helper 사용 |
+| `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx` | 수정 | QC 상태 변경 feature UI 연결 |
+| `src/pages/release-list/ui/ReleaseListPage.tsx` | 수정 | App 소유 items를 받을 수 있도록 props 확장 |
+| `src/pages/release-detail/ui/ReleaseDetailPage.tsx` | 수정 | 외부 items/onItemsChange 연결 및 test case update 처리 |
+| `src/app/App.tsx` | 수정 | 릴리즈 items state를 App 경계로 리프팅 |
+| `src/app/App.test.tsx` | 수정 | QC 상태 변경 후 상세 요약/목록 진행률 반영 통합 테스트 추가 |
+| `docs/WORK_LOG.md` | 수정 | Unit 5 결과 기록 |
+| `docs/REVIEW_LOG.md` | 수정 | Unit 5 자체 리뷰 결과 기록 |
+| `docs/SESSION_STATE.md` | 수정 | 현재 상태 갱신 |
+| `docs/NEXT_TASK_DRAFT.md` | 수정 | Unit 6 초안으로 갱신 |
+
+### 구현 내용
+
+- **QC 상태 변경 UI**: QC Checklist 탭에서 각 테스트 케이스 상태를 `Not Started`, `Passed`, `Failed`, `Blocked`로 변경 가능.
+- **사유 입력 UX**: `Failed` 또는 `Blocked` 상태 선택 시 실패/차단 사유 textarea 표시 및 입력값 유지.
+- **상태 소유 구조 정리**: `App`이 전체 `ReleaseItem[]`을 소유하도록 리프팅해 상세에서 변경한 QC 상태가 목록으로 돌아갔을 때도 유지되도록 연결.
+- **도메인 helper 중앙화**: `getReleaseQcProgress`, `updateReleaseItemTestCase`를 `entities/release` public API로 제공.
+- **기존 목록 진행률 정리**: `ReleaseListPanel`의 local QC 진행률 계산을 release 도메인 helper로 교체.
+- **TDD 적용**: `App.test.tsx`에서 상태 변경 → 상세 QC 요약 갱신 → 목록 진행률 갱신 흐름을 RED로 확인한 뒤 구현.
+
+### 테스트 및 검증
+
+```bash
+pnpm lint      # ✅ PASS
+pnpm test      # ✅ PASS (45/45)
+pnpm typecheck # ✅ PASS
+pnpm build     # ✅ PASS (134 modules)
+```
+
+### 자체 리뷰 결과
+
+- 최종 판단: PASS
+- Critical: 없음
+- Warning: 없음
+
+### 남은 리스크
+
+1. **영구 저장 없음**: 상태 변경은 현재 SPA 메모리 state에만 유지된다. 실제 저장은 API 연동 범위에서 처리해야 한다.
+2. **사유 필수 검증 없음**: Failed/Blocked 상태에서 사유 입력란은 제공하지만 필수 입력 차단은 하지 않는다. MVP UX 기준에서는 허용한다.
+
+### 후속 권장 사항
+
+- Unit 6에서 export/복사 시 변경된 QC 상태와 실패/차단 사유가 산출물에 포함되는지 확인한다.
 
 ---
 

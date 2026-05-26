@@ -11,6 +11,207 @@
 
 ---
 
+## 2026-05-26 / Unit 8 — 테스트/문서 정리
+
+### 최종 판단
+
+- PASS
+
+### Critical
+
+- 없음
+
+### Warning
+
+- 없음
+
+### 리뷰 결과
+
+- README가 현재 구현 범위, 제외 범위, 실행/검증 명령, 테스트 현황을 반영함.
+- `CURRENT_TASK.md`, `NEXT_TASK_DRAFT.md`, `WORK_LOG.md`, `REVIEW_LOG.md`, `SESSION_STATE.md`가 Unit 8 기준으로 정리됨.
+- 신규 기능 변경 없이 문서/검증 정리에 한정됨.
+
+### 검증 결과
+
+```bash
+pnpm lint      # PASS
+pnpm test      # PASS (52/52)
+pnpm typecheck # PASS
+pnpm build     # PASS (137 modules)
+```
+
+추가 확인:
+
+- `git diff --check`: PASS
+- FSD/deep import 검색: 위반 없음
+- `any`, `TODO`, `FIXME` 코드 검색: 위반 없음
+
+### 보완 요청
+
+- 없음. Unit 8 종료 가능.
+
+---
+
+## 2026-05-26 / Unit 7 — UI Polish
+
+### 최종 판단
+
+- PASS
+
+### Critical
+
+- 없음
+
+### Warning
+
+- 없음
+
+### 리뷰 결과
+
+- 접근성: 릴리즈 목록 빈 상태 `status`, 목록 표 accessible name, 문서 탭 `tabpanel` 연결이 추가됨.
+- 반응형: 주요 데이터 표에 모바일 overflow 구조와 최소 너비가 적용됨.
+- 테스트: ReleaseListPanel 접근성/빈 상태 테스트와 ReleaseDocumentTabs tabpanel 테스트가 추가됨.
+- 범위 준수: 새로운 도메인 기능 없이 UI 품질 보완에 한정됨.
+
+### 검증 결과
+
+```bash
+pnpm lint
+pnpm test
+pnpm typecheck
+pnpm build
+```
+
+- 결과: 모두 PASS
+- 테스트: 8개 테스트 파일, 52개 테스트 통과
+- build: 137 modules transformed
+
+### 보완 요청
+
+- 없음. Unit 7 종료 가능.
+
+---
+
+## 2026-05-26 / Unit 6 — Export와 공지문 복사
+
+### 최종 판단
+
+- PASS
+
+### Critical
+
+- 없음
+
+### Warning
+
+- 없음
+
+### 리뷰 결과
+
+- 요구사항 충족: Announcement clipboard 복사, CHANGELOG CSV, QC CSV, Release Note HTML, Release JSON 생성과 UI 버튼이 구현됨.
+- 아키텍처: 문자열 생성은 `entities/release`, 상호작용 UI는 `features/release-export`, 조합은 widget에서 수행해 FSD 경계를 유지함.
+- 데이터 계약: export 함수는 기존 `Release`, `ReleaseItem`과 Unit 1 문서 생성 함수 결과를 사용함.
+- 테스트: export 문자열 생성 4개 테스트와 clipboard 복사 UI 테스트가 추가됨.
+- 품질: build 실패 원인이던 `String.prototype.replaceAll` 사용을 ES target 호환 regex replace로 수정함.
+
+### 검증 결과
+
+```bash
+pnpm lint
+```
+
+- 결과: PASS
+
+```bash
+pnpm test
+```
+
+- 결과: PASS
+- 상세: 7개 테스트 파일, 50개 테스트 통과
+
+```bash
+pnpm typecheck
+```
+
+- 결과: PASS
+
+```bash
+pnpm build
+```
+
+- 결과: PASS
+- 상세: `tsc -b && vite build`, 137 modules transformed
+
+### 보완 요청
+
+- 없음. Unit 6 종료 가능.
+
+### 후속 권장 사항
+
+- Unit 7에서 export toolbar와 문서 탭의 모바일 레이아웃을 확인한다.
+
+---
+
+## 2026-05-26 / Unit 5 — QC 체크리스트 상태 UX
+
+### 최종 판단
+
+- PASS
+
+### Critical
+
+- 없음
+
+### Warning
+
+- 없음
+
+### 리뷰 결과
+
+- 요구사항 충족: QC 상태 변경, Failed/Blocked 사유 입력, 상세 QC 요약 갱신, 목록 QC 진행률 반영이 구현됨.
+- 아키텍처: 상태 변경 UI는 `features/qc-test-status`, 도메인 계산/업데이트 helper는 `entities/release`, 상태 소유는 `App`/page 경계로 분리됨.
+- FSD: deep import 없음. widgets는 feature UI를 public API로 조합하고, feature는 entities만 참조함.
+- 데이터 계약: `ReleaseItem.testCases` 구조를 유지하면서 immutable update helper로 상태/사유를 갱신함.
+- 테스트: `App.test.tsx`가 상세 상태 변경과 목록 진행률 반영까지 통합 흐름을 검증함.
+
+### 검증 결과
+
+```bash
+pnpm lint
+```
+
+- 결과: PASS
+
+```bash
+pnpm test
+```
+
+- 결과: PASS
+- 상세: 6개 테스트 파일, 45개 테스트 통과
+
+```bash
+pnpm typecheck
+```
+
+- 결과: PASS
+
+```bash
+pnpm build
+```
+
+- 결과: PASS
+- 상세: `tsc -b && vite build`, 134 modules transformed
+
+### 보완 요청
+
+- 없음. Unit 5 종료 가능.
+
+### 후속 권장 사항
+
+- Unit 6 export 산출물에서 QC 상태와 실패/차단 사유를 포함할지 확인한다.
+
+---
+
 ## 2026-05-26 / Unit 4 — 문서 미리보기 고도화
 
 ### 최종 판단

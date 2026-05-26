@@ -7,25 +7,22 @@
 ## 1. 현재 상태
 
 - 현재 브랜치: `main`
-- 현재 작업: Unit 4 완료 — Unit 5 착수 대기
-- 마지막 완료 작업: Unit 4 문서 미리보기 고도화 (2026-05-26)
+- 현재 작업: Unit 8 완료
+- 마지막 완료 작업: Unit 8 테스트/문서 정리 (2026-05-26)
 - 마지막 커밋: `c0693a4` ✨ 릴리즈 도메인 모델과 문서 생성 함수 추가
-- 커밋 여부: 미커밋 (Unit 1 + Unit 2 + Unit 3 + Unit 4 변경사항이 worktree에 있음)
-- 리뷰 상태: Unit 4 PASS
+- 커밋 여부: 미커밋 (Unit 1~Unit 8 변경사항이 worktree에 있음)
+- 리뷰 상태: Unit 8 PASS
 
 ## 2. 미완료 작업
 
-- Unit 5 QC 체크리스트 상태 UX
-- Unit 6 Export와 공지문 복사
-- Unit 7 UI Polish
-- Unit 8 테스트/문서 정리
+- 없음 (Unit 1~8 완료)
 
 ## 3. 현재 worktree 주의사항
 
-- Unit 1 + Unit 2 + Unit 3 + Unit 4 변경사항이 미커밋 상태다.
+- Unit 1~Unit 8 변경사항이 미커밋 상태다.
 - `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` 모두 PASS (2026-05-26 기준).
-  - test: 44/44 (Unit 1 22개 + App smoke 2개 + ReleaseListPage 3개 + ReleaseDocumentTabs 5개 + ReleaseDetailPage 2개 + ReleaseItemForm 10개)
-  - build: 131 modules
+  - test: 52/52
+  - build: 137 modules
 - Unit 3에서 추가/수정된 파일:
   - `src/shared/lib/createId.ts` (신규)
   - `src/features/release-item-form/model/schema.ts` (신규)
@@ -46,11 +43,39 @@
   - `docs/CURRENT_TASK.md` (Unit 4 범위)
   - `docs/NEXT_TASK_DRAFT.md` (Unit 5 초안)
   - `docs/WORK_LOG.md`, `docs/REVIEW_LOG.md`, `docs/SESSION_STATE.md`
+- Unit 5에서 추가/수정된 파일:
+  - `src/entities/release/model/qcStatus.ts` (신규)
+  - `src/features/qc-test-status/ui/QCTestStatusControl.tsx` (신규)
+  - `src/features/qc-test-status/index.ts` (신규)
+  - `src/entities/release/index.ts`, `src/features/index.ts`
+  - `src/app/App.tsx`, `src/app/App.test.tsx`
+  - `src/pages/release-list/ui/ReleaseListPage.tsx`
+  - `src/pages/release-detail/ui/ReleaseDetailPage.tsx`
+  - `src/widgets/release-list/ui/ReleaseListPanel.tsx`
+  - `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx`
+- Unit 6에서 추가/수정된 파일:
+  - `src/entities/release/model/exportReleaseDocuments.ts` (신규)
+  - `src/entities/release/model/exportReleaseDocuments.test.ts` (신규)
+  - `src/features/release-export/ui/ReleaseExportActions.tsx` (신규)
+  - `src/features/release-export/index.ts` (신규)
+  - `src/entities/release/index.ts`, `src/features/index.ts`
+  - `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx`
+  - `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx`
+- Unit 7에서 추가/수정된 파일:
+  - `src/widgets/release-list/ui/ReleaseListPanel.tsx`
+  - `src/widgets/release-list/ui/ReleaseListPanel.test.tsx` (신규)
+  - `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.tsx`
+  - `src/widgets/release-document-tabs/ui/ReleaseDocumentTabs.test.tsx`
+- Unit 8에서 추가/수정된 파일:
+  - `README.md`
+  - `docs/CURRENT_TASK.md`
+  - `docs/NEXT_TASK_DRAFT.md`
+  - `docs/WORK_LOG.md`, `docs/REVIEW_LOG.md`, `docs/SESSION_STATE.md`
 
 ## 4. 다음 액션
 
-1. `docs/NEXT_TASK_DRAFT.md`를 참고해 Unit 5를 준비한다.
-2. QC 상태 변경 UX 착수 전 Unit 4의 `TEST_STATUS_LABEL`과 QC 요약 구조를 재사용할 범위를 결정한다.
+1. Unit 1~8 변경사항을 기능 단위로 커밋한다.
+2. 실제 GitLab API/TanStack Query/MSW 도입 여부를 다음 작업으로 결정한다.
 
 ## 5. 재개 시 읽을 문서
 
