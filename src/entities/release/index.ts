@@ -36,3 +36,13 @@ export type {
   AnnouncementConfig,
   AnnouncementData,
 } from './model/generateReleaseDocuments';
+
+export { getReleaseQcProgress, updateReleaseItemTestCase } from './model/qcStatus';
+export type { QCTestCaseUpdate, ReleaseQcProgress } from './model/qcStatus';
+
+export {
+  generateChangelogCsv,
+  generateQcChecklistCsv,
+  generateReleaseNoteHtml,
+  generateReleaseJson,
+} from './model/exportReleaseDocuments';

@@ -1,5 +1,5 @@
 import type { Release, ReleaseItem, ReleaseStatus } from '@entities/release';
-import { RELEASE_STATUS_LABEL, TEST_STATUS } from '@entities/release';
+import { RELEASE_STATUS_LABEL, getReleaseQcProgress } from '@entities/release';
 
 interface ReleaseListPanelProps {
   releases: Release[];
@@ -14,25 +14,21 @@ const STATUS_CLASS: Record<ReleaseStatus, string> = {
   ARCHIVED: 'bg-gray-200 text-gray-500',
 };
 
-const getQcProgress = (items: ReleaseItem[]) => {
-  const testCases = items.flatMap((item) => item.testCases);
-  if (testCases.length === 0) return null;
-  const passed = testCases.filter((tc) => tc.status === TEST_STATUS.PASSED).length;
-  return { passed, total: testCases.length };
-};
-
 export const ReleaseListPanel = ({ releases, allItems, onSelectRelease }: ReleaseListPanelProps) => {
   if (releases.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg py-12 text-center text-sm text-gray-400">
+      <div
+        role="status"
+        className="bg-white border border-gray-200 rounded-lg py-12 text-center text-sm text-gray-400"
+      >
         릴리즈가 없습니다.
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="bg-white border border-gray-200 rounded-lg overflow-x-auto">
+      <table aria-label="릴리즈 목록 테이블" className="w-full min-w-[680px] text-sm">
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
             <th className="px-4 py-3 text-left font-medium text-gray-600">버전</th>
@@ -44,7 +40,7 @@ export const ReleaseListPanel = ({ releases, allItems, onSelectRelease }: Releas
         <tbody>
           {releases.map((release) => {
             const items = allItems.filter((item) => item.releaseId === release.id);
-            const qcProgress = getQcProgress(items);
+            const qcProgress = getReleaseQcProgress(items);
             return (
               <tr
                 key={release.id}

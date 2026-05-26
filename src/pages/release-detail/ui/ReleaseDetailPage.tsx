@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { ReleaseItem } from '@entities/release';
-import { MOCK_RELEASES, getMockReleaseItems } from '@entities/release';
+import type { QCTestCaseUpdate, ReleaseItem } from '@entities/release';
+import { MOCK_RELEASES, getMockReleaseItems, updateReleaseItemTestCase } from '@entities/release';
 import { ReleaseDetailPanel } from '@widgets/release-detail';
 import { ReleaseDocumentTabs } from '@widgets/release-document-tabs';
 import { ReleaseItemForm } from '@features/release-item-form';
@@ -8,21 +8,42 @@ import { ReleaseItemForm } from '@features/release-item-form';
 interface ReleaseDetailPageProps {
   releaseId: string;
   onBack: () => void;
+  items?: ReleaseItem[];
+  onItemsChange?: (items: ReleaseItem[]) => void;
 }
 
-export const ReleaseDetailPage = ({ releaseId, onBack }: ReleaseDetailPageProps) => {
+export const ReleaseDetailPage = ({
+  releaseId,
+  onBack,
+  items: externalItems,
+  onItemsChange,
+}: ReleaseDetailPageProps) => {
   const release = MOCK_RELEASES.find((r) => r.id === releaseId);
   const [items, setItems] = useState<ReleaseItem[]>(() => getMockReleaseItems(releaseId));
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const currentItems = externalItems ?? items;
 
   useEffect(() => {
     setItems(getMockReleaseItems(releaseId));
     setIsFormOpen(false);
   }, [releaseId]);
 
+  const updateItems = (updater: (prevItems: ReleaseItem[]) => ReleaseItem[]) => {
+    const nextItems = updater(currentItems);
+    if (onItemsChange) {
+      onItemsChange(nextItems);
+      return;
+    }
+    setItems(nextItems);
+  };
+
   const handleItemSubmit = (newItem: ReleaseItem) => {
-    setItems((prev) => [...prev, newItem]);
+    updateItems((prev) => [...prev, newItem]);
     setIsFormOpen(false);
+  };
+
+  const handleTestCaseUpdate = (testCaseId: string, updates: QCTestCaseUpdate) => {
+    updateItems((prev) => updateReleaseItemTestCase(prev, testCaseId, updates));
   };
 
   if (!release) {
@@ -59,7 +80,11 @@ export const ReleaseDetailPage = ({ releaseId, onBack }: ReleaseDetailPageProps)
           </button>
         </div>
       )}
-      <ReleaseDocumentTabs release={release} items={items} />
+      <ReleaseDocumentTabs
+        release={release}
+        items={currentItems}
+        onUpdateTestCase={handleTestCaseUpdate}
+      />
     </div>
   );
 };

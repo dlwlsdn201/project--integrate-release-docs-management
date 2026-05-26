@@ -9,7 +9,9 @@ import {
   TEST_STATUS,
   TEST_STATUS_LABEL,
 } from '@entities/release';
-import type { QcChecklistData, TestStatus } from '@entities/release';
+import type { QCTestCaseUpdate, QcChecklistData, TestStatus } from '@entities/release';
+import { QCTestStatusControl } from '@features/qc-test-status';
+import { ReleaseExportActions } from '@features/release-export';
 
 type TabId = 'overview' | 'changelog' | 'qcChecklist' | 'releaseNote' | 'announcement';
 
@@ -38,6 +40,7 @@ const TEST_STATUS_ORDER: TestStatus[] = [
 interface ReleaseDocumentTabsProps {
   release: Release;
   items: ReleaseItem[];
+  onUpdateTestCase?: (testCaseId: string, updates: QCTestCaseUpdate) => void;
 }
 
 const getQcStatusSummary = (qcData: QcChecklistData) => {
@@ -59,7 +62,11 @@ const getQcStatusSummary = (qcData: QcChecklistData) => {
   return { counts, totalCount };
 };
 
-export const ReleaseDocumentTabs = ({ release, items }: ReleaseDocumentTabsProps) => {
+export const ReleaseDocumentTabs = ({
+  release,
+  items,
+  onUpdateTestCase,
+}: ReleaseDocumentTabsProps) => {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
 
   const changelogData = generateChangelog(release, items);
@@ -68,16 +75,24 @@ export const ReleaseDocumentTabs = ({ release, items }: ReleaseDocumentTabsProps
   const announcementData = generateAnnouncement(release, items);
   const qcStatusSummary = getQcStatusSummary(qcData);
   const privateReleaseNoteItemCount = items.filter((releaseItem) => !releaseItem.isPublic).length;
+  const activeTabLabel = TABS.find((tab) => tab.id === activeTab)?.label ?? 'Overview';
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <ReleaseExportActions
+        release={release}
+        items={items}
+        announcementText={announcementData.text}
+      />
       <div className="border-b border-gray-200">
         <nav role="tablist" className="flex overflow-x-auto">
           {TABS.map((tab) => (
             <button
               key={tab.id}
+              id={`tab-${tab.id}`}
               role="tab"
               aria-selected={activeTab === tab.id}
+              aria-controls={`panel-${tab.id}`}
               onClick={() => setActiveTab(tab.id)}
               className={`shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
@@ -91,12 +106,18 @@ export const ReleaseDocumentTabs = ({ release, items }: ReleaseDocumentTabsProps
         </nav>
       </div>
 
-      <div className="p-4">
+      <div
+        id={`panel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${activeTab}`}
+        aria-label={activeTabLabel}
+        className="p-4"
+      >
         {activeTab === 'overview' && (
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">포함 항목 ({items.length})</h3>
-            <div className="overflow-hidden border border-gray-200 rounded-lg">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+              <table className="w-full min-w-[680px] text-sm">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th className="px-4 py-2 text-left font-medium text-gray-600">티켓</th>
@@ -172,8 +193,8 @@ export const ReleaseDocumentTabs = ({ release, items }: ReleaseDocumentTabsProps
                     <span className="font-mono text-gray-400 mr-2">{entry.ticketNumber}</span>
                     {entry.releaseItemTitle}
                   </h4>
-                  <div className="overflow-hidden border border-gray-200 rounded-lg">
-                    <table className="w-full text-sm">
+                  <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                    <table className="w-full min-w-[760px] text-sm">
                       <thead>
                         <tr className="bg-gray-50 border-b border-gray-200">
                           <th className="px-3 py-2 text-left font-medium text-gray-600">테스트 항목</th>
@@ -187,7 +208,14 @@ export const ReleaseDocumentTabs = ({ release, items }: ReleaseDocumentTabsProps
                             <td className="px-3 py-2 text-gray-700">{tc.description}</td>
                             <td className="px-3 py-2 text-gray-600">{tc.expectedResult}</td>
                             <td className={`px-3 py-2 ${TEST_STATUS_CLASS[tc.status]}`}>
-                              {TEST_STATUS_LABEL[tc.status]}
+                              {onUpdateTestCase ? (
+                                <QCTestStatusControl
+                                  testCase={tc}
+                                  onUpdate={(updates) => onUpdateTestCase(tc.id, updates)}
+                                />
+                              ) : (
+                                TEST_STATUS_LABEL[tc.status]
+                              )}
                             </td>
                           </tr>
                         ))}

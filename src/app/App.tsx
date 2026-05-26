@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ReleaseListPage } from '@pages/release-list';
 import { ReleaseDetailPage } from '@pages/release-detail';
+import { MOCK_RELEASE_ITEMS } from '@entities/release';
+import type { ReleaseItem } from '@entities/release';
 
 const APP_TITLE = 'ReleaseHub';
 
@@ -15,6 +17,7 @@ const parseHash = (hash: string): Route => {
 
 export const App = () => {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
+  const [items, setItems] = useState<ReleaseItem[]>(MOCK_RELEASE_ITEMS);
 
   useEffect(() => {
     const handleHashChange = () => setRoute(parseHash(window.location.hash));
@@ -24,6 +27,13 @@ export const App = () => {
 
   const navigate = (path: string) => {
     window.location.hash = path;
+  };
+
+  const handleReleaseItemsChange = (releaseId: string, nextReleaseItems: ReleaseItem[]) => {
+    setItems((prevItems) => [
+      ...prevItems.filter((releaseItem) => releaseItem.releaseId !== releaseId),
+      ...nextReleaseItems,
+    ]);
   };
 
   return (
@@ -38,10 +48,20 @@ export const App = () => {
       </header>
       <main>
         {route.type === 'list' && (
-          <ReleaseListPage onSelectRelease={(id) => navigate(`/releases/${id}`)} />
+          <ReleaseListPage
+            allItems={items}
+            onSelectRelease={(id) => navigate(`/releases/${id}`)}
+          />
         )}
         {route.type === 'detail' && (
-          <ReleaseDetailPage releaseId={route.releaseId} onBack={() => navigate('/releases')} />
+          <ReleaseDetailPage
+            releaseId={route.releaseId}
+            items={items.filter((releaseItem) => releaseItem.releaseId === route.releaseId)}
+            onItemsChange={(nextReleaseItems) =>
+              handleReleaseItemsChange(route.releaseId, nextReleaseItems)
+            }
+            onBack={() => navigate('/releases')}
+          />
         )}
       </main>
     </div>

@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ReleaseDocumentTabs } from './ReleaseDocumentTabs';
 import { MOCK_RELEASES, getMockReleaseItems } from '@entities/release';
 
@@ -10,6 +11,7 @@ describe('ReleaseDocumentTabs', () => {
     render(<ReleaseDocumentTabs release={release} items={items} />);
 
     expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel', { name: 'Overview' })).toBeInTheDocument();
     // Overview shows ticker numbers and titles from items
     expect(screen.getByText('ABC-123')).toBeInTheDocument();
     expect(screen.getByText('로그인 실패 안내 문구 개선')).toBeInTheDocument();
@@ -61,5 +63,21 @@ describe('ReleaseDocumentTabs', () => {
 
     expect(announcementPreview.value).toContain('v1.8.0 릴리즈 변경사항');
     expect(announcementPreview.value).toContain('#개발팀');
+  });
+
+  it('copies announcement text to clipboard', async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(<ReleaseDocumentTabs release={release} items={items} />);
+
+    await user.click(screen.getByRole('button', { name: '공지문 복사' }));
+
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('#개발팀'));
+    expect(screen.getByText('공지문을 복사했습니다.')).toBeInTheDocument();
   });
 });
