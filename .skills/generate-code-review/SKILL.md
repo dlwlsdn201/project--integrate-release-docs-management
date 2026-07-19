@@ -1,28 +1,42 @@
 ---
-version: v1.2
+version: v2.0
+updated: 2026-07-05
 name: generate-code-review
-description: "[AI Action] 작성된 파일이나 코드 블록에 대해 사내 컨벤션(FSD, 네이밍, 상태 관리 등) 기반의 코드 리뷰를 진행할 때 호출하세요."
+description: "[AI Action] 프로젝트 컨벤션(FSD, 네이밍, API 패턴) 및 성능·유지보수성 관점 코드 리뷰를 진행할 때 호출. 구 generate-performance-review 통합."
 ---
 
-# 자동화 코드 리뷰 스킬
+# 코드 리뷰 스킬
 
-이 스킬이 호출되면, AI는 반드시 `@project-rules_review.mdc`, `@project-rules_architecture.mdc`, `@project-rules_working.mdc`, `@project-rules_api-spec-contract.mdc` 를 정독한 후 사용자의 코드를 리뷰합니다.
+시작 전에 `agent-workflow.mdc` §4(검증 항목)와 관련 규칙 문서를 읽는다. 목적은 코드 직접 수정이 아니라 **근거 기반 문제 식별과 우선순위 제시**다.
 
-사용자가 제시한 코드를 분석하고, 아래의 마크다운 템플릿 양식에 맞춰 엄격하고 전문적인 리뷰 결과를 제공하세요. 칭찬할 점은 칭찬하고, 수정할 점은 명확한 코드 예시와 함께 제안하세요.
+## 1. 리뷰 관점
 
-**[코드 리뷰 출력 템플릿]**
+### 컨벤션 (항상)
 
-### 🛡️ NX Frontend 컨벤션 검증 결과
-- **FSD 아키텍처 위반 여부**: (Pass 🟢 / Fail 🔴) - 이유 설명
-- **네이밍 및 클린 코드**: (Pass 🟢 / Fail 🔴) - 이유 설명
-- **에러/로딩(Suspense) 처리**: (Pass 🟢 / Fail 🔴) - 이유 설명
-- **import alias path**: (Pass 🟢 / Fail 🔴) - 이유 설명
+`agent-workflow.mdc` §4의 7개 항목: FSD 의존성, React 메모이제이션, API 패턴, 상태 관리, UI 하드코딩, 네이밍, 유지보수성.
 
-### 💡 개선 제안 (Refactoring Suggestions)
-(위반된 규칙이 있다면, 왜 고쳐야 하는지 15년 차 시니어 개발자의 시각으로 친절하고 명확하게 근거를 기반으로 설명하고, 수정된 `Before & After` 코드를 제공하세요.)
+### 성능 (요청 시 또는 훅·전처리 로직이 복잡할 때)
 
-### ✅ 놓치기 쉬운 Best Practice 체크
-- [ ] Jotai 파라미터 스토어를 올바르게 분리했는가?
-- [ ] 하드코딩된 디자인 토큰은 없는가?
-- [ ] 불필요한 메모이징(`useMemo`/`useCallback`)은 없는가?
-- [ ] API Fetcher가 `project-rules_api-spec-contract.mdc`의 path/method/query 규칙을 준수하는가?
+- **복잡도**: 주요 함수/훅의 시간·공간복잡도 추정, 반복문 내 중복 연산·불필요한 정렬/필터 체인
+- **렌더링**: 동일 데이터 소스의 중복 구독, 파생값 계산의 책임 과다
+- **조회 패턴**: 분산된 조회 트리거로 인한 중복 refetch, queryKey 안정성, 파라미터가 실제 API payload에 반영되는지
+- **생명주기**: cleanup 누락(이벤트·타이머·구독)
+
+### 금지
+
+- 근거 없는 성능 추측("느릴 것 같다" 수준), 스타일 취향을 이슈처럼 포장, 전체 재작성 강요
+
+## 2. 출력 템플릿
+
+### 🛡️ 컨벤션 검증 결과
+- FSD 아키텍처 / 네이밍·클린 코드 / 에러·로딩(Suspense) 처리 / import alias — 각각 (Pass 🟢 / Fail 🔴) + 이유
+
+### 🔴 즉시 수정 · 🟡 단기 개선 · ⏸️ 보류
+각 항목: **위치**(파일 경로) / **문제** / **영향** / **권장 조치**(최소 변경 기준). 보류는 보류 이유와 재평가 트리거를 명시.
+
+### 💡 개선 제안
+위반 규칙이 있으면 근거와 함께 Before/After 스니펫 제공 (전체 재작성 금지).
+
+## 3. 원칙
+
+"문제 식별 → 영향 설명 → 최소 변경 조치" 순서로, 팀 리소스를 고려해 우선순위를 과감히 제시한다.

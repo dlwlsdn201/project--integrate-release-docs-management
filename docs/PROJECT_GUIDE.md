@@ -21,6 +21,8 @@ ReleaseHub는 GitLab 기반 개발 흐름에서 발생하는 릴리즈 정보를
 - React 19 + TypeScript + Vite 기반 SPA 프로토타입
 - FSD 기반 디렉토리 구조
 - mock GitLab 데이터 기반 릴리즈 항목 등록 흐름
+- GitLab 저장소/MR 선택과 mock AI 변경 요약 초안 검토 흐름
+- 실제 모델과 분리된 `SummaryDraftGenerator` 계약 및 mock adapter
 - 릴리즈 버전 목록/상세 화면
 - CHANGELOG, QC Checklist, Release Note, Announcement 미리보기
 - React Hook Form + Zod 기반 릴리즈 항목 폼
@@ -36,7 +38,8 @@ ReleaseHub는 GitLab 기반 개발 흐름에서 발생하는 릴리즈 정보를
 - 사내 메신저 자동 발송
 - 실시간 협업 편집
 - 복잡한 권한 관리
-- AI 기반 문장 자동 생성
+- 실제 AI 모델 호출과 실제 GitLab diff 분석. 프로토타입에서는 mock AI 초안 생성 UX만 포함
+- 외부 LLM API Key 입력·저장과 브라우저 직접 모델 호출
 - 백엔드 서버 구현
 
 ## 4. 기술 및 아키텍처 원칙
@@ -70,6 +73,7 @@ ReleaseHub는 GitLab 기반 개발 흐름에서 발생하는 릴리즈 정보를
 | Unit 6 | 공지문 복사, CSV/HTML export, 릴리즈 데이터 JSON export 구현 | P1 | Draft |
 | Unit 7 | 반응형 UI, 접근성, 빈 상태/에러 상태, 시각적 완성도 보완 | P1 | Draft |
 | Unit 8 | 테스트 보강, README 실행 가이드, 작업 로그/세션 문서 정리 | P1 | Draft |
+| Unit 9 | GitLab 저장소/MR 선택, AI 변경 요약 초안, 우측 실시간 미리보기 UX | P0 | Draft |
 
 ## 6. 단위별 완료 기준
 
@@ -133,6 +137,19 @@ ReleaseHub는 GitLab 기반 개발 흐름에서 발생하는 릴리즈 정보를
 - 핵심 순수 함수와 핵심 feature 흐름 테스트가 존재한다.
 - README에 실행 방법, 주요 기능, 구현 완료 범위가 업데이트된다.
 - `WORK_LOG.md`, `SESSION_STATE.md`가 최신 상태다.
+
+### Unit 9 — GitLab MR 기반 AI 초안 UX
+
+- GitLab 연동 시 저장소를 먼저 검색·선택하고, 선택한 저장소 범위에서 MR을 검색한다.
+- MR 선택 시 mock AI 분석 상태를 거쳐 `변경 내용 요약` 초안을 자동 입력한다.
+- 사용자가 수정한 요약은 MR 변경이나 재생성으로 자동 덮어쓰지 않는다.
+- AI 실패 시 수동 입력과 저장이 가능하다.
+- 데스크톱에서는 우측 미리보기가 sticky pane으로 유지되고 현재 폼 값을 실시간 반영한다.
+- 좁은 화면에서는 편집/미리보기 탭으로 전환한다.
+- UI와 폼은 `SummaryDraftGenerator` 계약만 사용하고 mock adapter로 동작한다.
+- 외부 LLM SDK, 사용자 API Key 입력, 클라이언트 credential 저장을 추가하지 않는다.
+- 사내 LLM 교체 지점은 generator factory 또는 adapter 한 곳에만 설명 주석으로 남긴다.
+- 실제 연동 시에는 서버/BFF adapter를 통해 호출하며 프론트엔드에서 모델 endpoint를 직접 호출하지 않는다.
 
 ## 7. Definition of Done
 

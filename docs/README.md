@@ -10,6 +10,8 @@
 docs/
   README.md
   PROJECT_GUIDE.md
+  PRODUCT_PLAN.md
+  STITCH_DESIGN_BRIEF.md
   CURRENT_TASK.md
   NEXT_TASK_DRAFT.md
   WORK_LOG.md
@@ -42,6 +44,35 @@ docs/
 - Definition of Done
 - 리뷰 기준
 - 모델별 역할 분담
+
+주 담당: GPT
+
+### PRODUCT_PLAN.md
+
+현재 Google Docs/Sheets 형상관리 구조를 ReleaseHub 제품 구조로 전환하기 위한 제품 기획 문서다.
+
+포함 내용:
+
+- 현행 문서 필드 분석
+- 원천 데이터 모델
+- 산출물 매핑
+- 주요 화면 설계
+- MVP 범위
+- 단계별 로드맵
+
+주 담당: GPT
+
+### STITCH_DESIGN_BRIEF.md
+
+Stitch 또는 유사한 디자인 생성 도구에 전달할 화면 설계 브리프다.
+
+포함 내용:
+
+- 제품 컨셉
+- 화면별 필수 구성
+- 시각 스타일
+- Stitch 프롬프트
+- 디자인 리뷰 기준
 
 주 담당: GPT
 

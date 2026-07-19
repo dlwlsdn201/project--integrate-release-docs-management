@@ -1,17 +1,23 @@
 ---
-version: v1.1
+version: v2.0
+updated: 2026-07-05
 name: figma-to-code
-description: Figma 디자인을 styled-components 코드로 변환할 때 사내 디자인 토큰(Theme)을 강제 적용. Figma to code, Figma Code 변환, 디자인 토큰, getCommonColors, getBodyTypography 작업 시 적용. globs: src/**/*.tsx
+description: Figma 디자인을 프로젝트 디자인 토큰 기반 코드로 변환. 토큰 매핑과 공통 컴포넌트 재사용을 강제. Figma to code, 디자인 구현 작업 시 적용. globs: src/**/*.tsx
 ---
 
-# Figma 디자인 Code 변환 스킬
+# Figma → 코드 변환 스킬
 
-이 스킬이 호출되면, AI는 반드시 `@project-rules_figma-to-code.mdc` 를 먼저 읽고 다음 작업을 수행합니다.
+시작 전에 `ui-standards.mdc`와 프로젝트 디자인 시스템 문서(⚙️ 프로젝트 설정)를 읽는다.
 
-선택한 Figma 프레임을 분석하여 `styled-components` 코드로 변환하세요.
+## 절차
 
-**[작성 준수사항]**
-1. 최적화된 분석: Figma API로 전체 노드를 한 번에 부르지 말고, `get_selection()`으로 뼈대부터 점진적으로 분석해서 `.cursor/figma-analysis/` 폴더에 마크다운 파일로 먼저 정리하세요.
-2. 하드코딩 절대 금지: 절대 색상 헥스코드(예: `#FFFFFF`)나 픽셀 사이즈(예: `14px`)를 하드코딩하지 마세요.
-3. 테마 토큰 매핑: 반드시 `@nx-frontend/design-kits/lib/style`의 `getCommonColors`, `getBodyTypography` 등 유틸리티 함수로 100% 매핑해서 코드를 작성하세요.
-4. 반응형 및 간격: 간격(Padding, Margin, Gap)은 반드시 `rem` 단위로 변환하여 적용하세요.
+1. **점진 분석**: Figma 전체 노드를 한 번에 불러오지 말고 선택 프레임부터 뼈대 → 세부 순으로 분석한다. 복잡한 화면은 분석 결과(컴포넌트 계층, Auto Layout → flex/grid 매핑, 토큰 목록)를 마크다운으로 먼저 정리한 뒤 구현한다.
+2. **토큰 매핑**: 색상·간격·타이포그래피·그림자를 프로젝트 토큰(Tailwind theme, CSS 변수, 테마 유틸리티)으로 매핑한다. 헥스코드·px 하드코딩 절대 금지. 간격은 rem 단위로 변환. 매핑할 토큰이 없으면 theme 확장을 제안한다.
+3. **컴포넌트 재사용**: `@shared/ui` → 채택한 디자인 시스템 라이브러리 → 신규 작성 순으로 확인한다.
+4. **배치**: FSD 기준을 따른다 — 순수 UI는 `shared/ui`, 상호작용 기능은 `features`, 화면 조합은 `widgets`/`app` (상세 → `architecture.mdc`).
+5. **시맨틱·접근성**: 시맨틱 태그(button, nav, section)와 접근성 속성(aria-*)을 적용한다.
+6. **검증 체크리스트**:
+   - PRD 범위(제외 표시 영역 미구현)를 지켰는가?
+   - 프로젝트 레이아웃 기준(컨테이너·반응형)대로 배치되는가?
+   - 텍스트가 최소 지원 폭에서 잘리지 않는가?
+   - 디자인과 구현의 의도적 차이를 작업 로그에 남겼는가?
